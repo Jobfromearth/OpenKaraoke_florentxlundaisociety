@@ -1,0 +1,103 @@
+<h2>调音台 UI 设计</h2>
+<p class="subtitle">底部抽屉展开后的面板布局</p>
+
+<div class="mockup">
+  <div class="mockup-header">歌曲页底部 — 抽屉关闭状态</div>
+  <div class="mockup-body" style="background:#111;padding:12px;border-radius:6px;">
+    <div style="display:flex;justify-content:center;">
+      <button style="background:#1a2a1a;border:1px solid #2d5a45;color:#4ade80;padding:8px 24px;border-radius:20px;font-size:13px;cursor:pointer;">
+        🎛 调音台
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top:20px;">
+  <div class="mockup-header">调音台抽屉 — 展开状态</div>
+  <div class="mockup-body" style="background:#0d1a12;padding:16px;border-radius:8px;border:1px solid #1a3a25;">
+
+    <!-- 顶部标题栏 -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <span style="color:#4ade80;font-size:14px;font-weight:600;">🎛 调音台</span>
+      <div style="display:flex;gap:8px;">
+        <span style="background:#1e3a2f;color:#86efac;padding:4px 10px;border-radius:12px;font-size:11px;">⚠ 建议戴耳机</span>
+        <span style="color:#555;font-size:14px;cursor:pointer;">✕</span>
+      </div>
+    </div>
+
+    <!-- 三列布局 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+
+      <!-- 左列：麦克风控制 -->
+      <div style="background:#111;border-radius:8px;padding:12px;">
+        <div style="color:#aaa;font-size:11px;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">🎤 麦克风</div>
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;color:#ccc;font-size:11px;margin-bottom:4px;">
+            <span>音量</span><span style="color:#4ade80;">75%</span>
+          </div>
+          <div style="background:#1a1a1a;border-radius:4px;height:6px;"><div style="background:#4ade80;width:75%;height:100%;border-radius:4px;"></div></div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;color:#ccc;font-size:11px;margin-bottom:4px;">
+            <span>混响</span><span style="color:#4ade80;">40%</span>
+          </div>
+          <div style="background:#1a1a1a;border-radius:4px;height:6px;"><div style="background:#4ade80;width:40%;height:100%;border-radius:4px;"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;color:#ccc;font-size:11px;margin-bottom:4px;">
+            <span>回声</span><span style="color:#4ade80;">20%</span>
+          </div>
+          <div style="background:#1a1a1a;border-radius:4px;height:6px;"><div style="background:#4ade80;width:20%;height:100%;border-radius:4px;"></div></div>
+        </div>
+        <div style="margin-top:12px;display:flex;justify-content:center;">
+          <button style="background:#1e3a2f;border:1px solid #2d5a45;color:#4ade80;padding:6px 16px;border-radius:16px;font-size:11px;">
+            👂 监听：关
+          </button>
+        </div>
+      </div>
+
+      <!-- 中列：音调走势图 -->
+      <div style="background:#111;border-radius:8px;padding:12px;">
+        <div style="color:#aaa;font-size:11px;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">📊 实时走势</div>
+        <!-- 模拟 canvas 可视化 -->
+        <div style="background:#0a0a0a;border-radius:6px;height:80px;position:relative;overflow:hidden;margin-bottom:8px;">
+          <svg width="100%" height="100%" viewBox="0 0 200 80">
+            <!-- 音量条 -->
+            <rect x="0" y="50" width="200" height="30" fill="#0d1f0d"/>
+            <rect x="0" y="50" width="140" height="30" fill="#16a34a" opacity="0.6"/>
+            <text x="4" y="70" fill="#4ade80" font-size="9">音量</text>
+            <!-- 音调曲线 -->
+            <polyline points="0,35 20,30 40,32 60,25 80,28 100,22 120,26 140,20 160,24 180,18 200,22"
+              fill="none" stroke="#60a5fa" stroke-width="1.5" opacity="0.8"/>
+            <text x="4" y="14" fill="#60a5fa" font-size="9">音调</text>
+          </svg>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:#555;">
+          <span>当前: <span style="color:#60a5fa;">C#4</span></span>
+          <span>音量: <span style="color:#4ade80;">-12dB</span></span>
+        </div>
+      </div>
+
+      <!-- 右列：录音 -->
+      <div style="background:#111;border-radius:8px;padding:12px;">
+        <div style="color:#aaa;font-size:11px;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">⏺ 录音</div>
+        <div style="text-align:center;margin-bottom:12px;">
+          <div style="color:#555;font-size:10px;margin-bottom:8px;">需选择"共享标签页音频"</div>
+          <button style="background:#7f1d1d;border:1px solid #991b1b;color:#fca5a5;padding:8px 20px;border-radius:20px;font-size:12px;width:100%;">
+            ⏺ 开始录音
+          </button>
+        </div>
+        <div style="background:#0a0a0a;border-radius:6px;padding:8px;text-align:center;">
+          <div style="color:#555;font-size:20px;font-family:monospace;">00:00</div>
+          <div style="color:#444;font-size:9px;margin-top:2px;">录音时长</div>
+        </div>
+        <div style="margin-top:8px;">
+          <button style="background:#1a1a1a;border:1px solid #333;color:#666;padding:6px;border-radius:6px;width:100%;font-size:11px;" disabled>
+            ⬇ 下载录音
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,58 @@
+<h2>调音台放在哪里？</h2>
+<p class="subtitle">选择调音台面板在歌曲播放页的位置和形态</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f0f0f;padding:12px;font-family:monospace;font-size:11px;color:#888;">
+      <div style="background:#1a1a1a;border-radius:6px;padding:8px;margin-bottom:6px;color:#fff;font-size:12px;">▶ YouTube Player</div>
+      <div style="background:#1a1a1a;border-radius:6px;padding:8px;margin-bottom:6px;color:#aaa;font-size:11px;">🎵 歌词面板（自动滚动）</div>
+      <div style="background:#1e3a2f;border:1px solid #2d5a45;border-radius:6px;padding:10px;color:#4ade80;font-size:11px;text-align:center;">
+        🎛 调音台面板（底部展开/收起）<br>
+        <span style="font-size:9px;color:#666;">点击按钮 → 从底部滑入</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. 底部抽屉</h3>
+      <p>播放页底部有一个"🎛 调音台"按钮，点击后面板从下方滑入，覆盖在歌词上方。不影响默认布局。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f0f0f;padding:12px;font-family:monospace;font-size:11px;color:#888;">
+      <div style="display:flex;gap:6px;">
+        <div style="flex:1.2;display:flex;flex-direction:column;gap:6px;">
+          <div style="background:#1a1a1a;border-radius:6px;padding:8px;color:#fff;font-size:12px;">▶ YouTube Player</div>
+          <div style="background:#1a1a1a;border-radius:6px;padding:8px;flex:1;color:#aaa;font-size:11px;">🎵 歌词面板</div>
+        </div>
+        <div style="flex:0.8;background:#1e3a2f;border:1px solid #2d5a45;border-radius:6px;padding:8px;color:#4ade80;font-size:10px;">
+          🎛 调音台<br><br>
+          🎤 麦克风<br>
+          🎵 音乐<br>
+          🎶 混响<br>
+          🎼 音调
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. 右侧常驻面板</h3>
+      <p>播放页右侧增加一个固定的调音台列，和歌词并排显示。始终可见，无需点击展开。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f0f0f;padding:12px;font-family:monospace;font-size:11px;color:#888;">
+      <div style="background:#1a1a1a;border-radius:6px;padding:8px;margin-bottom:6px;color:#fff;font-size:12px;">▶ YouTube Player</div>
+      <div style="background:#1a1a1a;border-radius:6px;padding:8px;margin-bottom:6px;color:#aaa;font-size:11px;">🎵 歌词面板（自动滚动）</div>
+      <div style="background:#1a1a1a;border-radius:6px;padding:8px;color:#aaa;font-size:11px;text-align:center;">
+        [🎛 进入录音室] &nbsp; [🎤 快速监听]
+        <br><span style="font-size:9px;color:#555;">点击 → 跳转到独立的调音台页面</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. 独立页面</h3>
+      <p>歌曲页有入口按钮，点击跳转到一个专门的"录音室"页面，提供完整调音台界面，播放仍在后台继续。</p>
+    </div>
+  </div>
+
+</div>
