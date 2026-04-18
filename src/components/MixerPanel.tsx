@@ -24,7 +24,7 @@ interface MixerPanelProps {
 
 function formatTime(s: number): string {
   const m = Math.floor(s / 60)
-  return `${String(m).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
+  return `${String(m).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`
 }
 
 function Slider({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
