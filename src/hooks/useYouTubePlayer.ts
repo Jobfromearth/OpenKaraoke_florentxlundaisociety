@@ -30,6 +30,8 @@ export function useYouTubePlayer({ videoId, containerId }: UseYouTubePlayerOptio
       })
     }
 
+    let active = true
+
     if (typeof window !== 'undefined' && window.YT?.Player) {
       initPlayer()
     } else {
@@ -38,10 +40,15 @@ export function useYouTubePlayer({ videoId, containerId }: UseYouTubePlayerOptio
         tag.src = 'https://www.youtube.com/iframe_api'
         document.head.appendChild(tag)
       }
-      window.onYouTubeIframeAPIReady = initPlayer
+      const prev = window.onYouTubeIframeAPIReady
+      window.onYouTubeIframeAPIReady = () => {
+        prev?.()
+        if (active) initPlayer()
+      }
     }
 
     return () => {
+      active = false
       playerRef.current?.destroy()
       playerRef.current = null
       setIsReady(false)
