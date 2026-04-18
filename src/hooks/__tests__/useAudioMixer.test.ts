@@ -141,3 +141,59 @@ describe('useAudioMixer — setMicVolume / setReverb / setEcho', () => {
     expect(result.current.echoAmount).toBe(0.3)
   })
 })
+
+// ── MediaRecorder mock ───────────────────────────────────────────────────────
+const mockRecorder = {
+  start: jest.fn(),
+  stop: jest.fn(),
+  ondataavailable: null as ((e: { data: Blob }) => void) | null,
+  onstop: null as (() => void) | null,
+  state: 'inactive',
+}
+global.MediaRecorder = jest.fn(() => mockRecorder) as unknown as typeof MediaRecorder
+;(MediaRecorder as unknown as jest.Mock).isTypeSupported = jest.fn(() => true)
+
+describe('useAudioMixer — recording', () => {
+  it('sets isRecording true after startRecording', async () => {
+    const { result } = renderHook(() => useAudioMixer())
+    await act(async () => { result.current.openDrawer() })
+    await act(async () => { result.current.startRecording() })
+    expect(result.current.isRecording).toBe(true)
+  })
+
+  it('calls getDisplayMedia when recording starts', async () => {
+    const { result } = renderHook(() => useAudioMixer())
+    await act(async () => { result.current.openDrawer() })
+    await act(async () => { result.current.startRecording() })
+    expect(navigator.mediaDevices.getDisplayMedia).toHaveBeenCalledWith({ video: false, audio: true })
+  })
+
+  it('sets isRecording false after stopRecording', async () => {
+    const { result } = renderHook(() => useAudioMixer())
+    await act(async () => { result.current.openDrawer() })
+    await act(async () => { result.current.startRecording() })
+    act(() => { result.current.stopRecording() })
+    expect(result.current.isRecording).toBe(false)
+  })
+
+  it('sets hasRecording true after recorder fires onstop', async () => {
+    const { result } = renderHook(() => useAudioMixer())
+    await act(async () => { result.current.openDrawer() })
+    await act(async () => { result.current.startRecording() })
+    act(() => {
+      result.current.stopRecording()
+      mockRecorder.onstop?.()
+    })
+    expect(result.current.hasRecording).toBe(true)
+  })
+
+  it('stays idle and does not throw when getDisplayMedia is denied', async () => {
+    ;(navigator.mediaDevices.getDisplayMedia as jest.Mock).mockRejectedValueOnce(
+      new DOMException('Cancelled', 'NotAllowedError')
+    )
+    const { result } = renderHook(() => useAudioMixer())
+    await act(async () => { result.current.openDrawer() })
+    await act(async () => { result.current.startRecording() })
+    expect(result.current.isRecording).toBe(false)
+  })
+})

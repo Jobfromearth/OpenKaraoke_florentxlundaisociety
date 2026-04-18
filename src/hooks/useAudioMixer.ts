@@ -145,9 +145,67 @@ export function useAudioMixer() {
     if (nodesRef.current) nodesRef.current.echoGain.gain.value = v
   }, [])
 
-  const startRecording = useCallback(async () => { /* Task 2 */ }, [])
-  const stopRecording = useCallback(() => { /* Task 2 */ }, [])
-  const downloadRecording = useCallback(() => { /* Task 2 */ }, [])
+  const startRecording = useCallback(async () => {
+    if (!nodesRef.current) return
+    try {
+      const displayStream = await navigator.mediaDevices.getDisplayMedia({ video: false, audio: true })
+      displayStreamRef.current = displayStream
+
+      const { ctx, recDest } = nodesRef.current
+      const displaySource = ctx.createMediaStreamSource(displayStream)
+      const displayGain = ctx.createGain()
+      displayGain.gain.value = 1
+      displaySource.connect(displayGain)
+      displayGain.connect(recDest)
+
+      const hasAudio = displayStream.getAudioTracks().length > 0
+      chunksRef.current = []
+      recordingBlobRef.current = null
+      setHasRecording(false)
+
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : 'audio/webm'
+      const recorder = new MediaRecorder(recDest.stream, { mimeType })
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data)
+      }
+      recorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
+        recordingBlobRef.current = blob
+        setHasRecording(true)
+        if (!hasAudio) setError('录音未包含音乐（未选择共享标签页音频）')
+      }
+
+      recorder.start()
+      recorderRef.current = recorder
+      setIsRecording(true)
+      setRecordingTime(0)
+      timerRef.current = setInterval(() => setRecordingTime(t => t + 1), 1000)
+    } catch {
+      // user cancelled getDisplayMedia — do nothing
+    }
+  }, [])
+
+  const stopRecording = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current)
+    recorderRef.current?.stop()
+    displayStreamRef.current?.getTracks().forEach(t => t.stop())
+    displayStreamRef.current = null
+    recorderRef.current = null
+    setIsRecording(false)
+  }, [])
+
+  const downloadRecording = useCallback(() => {
+    if (!recordingBlobRef.current) return
+    const url = URL.createObjectURL(recordingBlobRef.current)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `recording-${Date.now()}.webm`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [])
 
   useEffect(() => {
     return () => {
