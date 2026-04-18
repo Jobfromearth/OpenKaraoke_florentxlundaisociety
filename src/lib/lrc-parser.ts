@@ -13,7 +13,10 @@ export function parseLRC(lrc: string): Omit<LyricLine, 'phonetic' | 'segments'>[
     const seconds = parseInt(match[2], 10)
     const ms = parseInt(match[3].padEnd(3, '0'), 10)
     const time = minutes * 60 + seconds + ms / 1000
-    const text = match[4].trim()
+    const text = match[4]
+      .replace(/\[[\d:.]+\]/g, '')   // strip extra [mm:ss.cs] tags (multi-timestamp lines)
+      .replace(/<[\d:.]+>/g, '')     // strip <mm:ss.cs> word-level tags (enhanced LRC)
+      .trim()
     if (text) raw.push({ time, text })
   }
 
