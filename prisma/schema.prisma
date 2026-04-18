@@ -22,7 +22,7 @@ model Song {
 model Lyrics {
   id           String @id @default(cuid())
   songId       String
-  phoneticLang String
+  phoneticLang String @default("zh")
   song         Song   @relation(fields: [songId], references: [id], onDelete: Cascade)
   lines        String // JSON array of LyricLine[]
 
