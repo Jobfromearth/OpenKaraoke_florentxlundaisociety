@@ -6,17 +6,29 @@ import type { LyricLine, Segment, PhoneticLang } from '@/lib/types'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-async function fetchLRC(query: string): Promise<string | null> {
-  const url = new URL('https://lrclib.net/api/search')
-  url.searchParams.set('track_name', query.toLowerCase())
-  const res = await fetch(url.toString(), { headers: { 'Lrclib-Client': 'foreign-song-learner v0.1' } })
-  if (!res.ok) return null
-  const results: { syncedLyrics?: string }[] = await res.json()
+async function fetchLRC(title: string, artist: string, durationSeconds: number, query?: string): Promise<string | null> {
+  // Try exact match first (title + artist + duration)
+  const getUrl = new URL('https://lrclib.net/api/get')
+  getUrl.searchParams.set('track_name', title)
+  getUrl.searchParams.set('artist_name', artist)
+  getUrl.searchParams.set('duration', String(durationSeconds))
+  const getRes = await fetch(getUrl.toString(), { headers: { 'Lrclib-Client': 'foreign-song-learner v0.1' } })
+  if (getRes.ok) {
+    const data = await getRes.json()
+    if (data.syncedLyrics) return data.syncedLyrics
+  }
+
+  // Fallback: search by user query or title
+  const searchUrl = new URL('https://lrclib.net/api/search')
+  searchUrl.searchParams.set('track_name', (query ?? title).toLowerCase())
+  const searchRes = await fetch(searchUrl.toString(), { headers: { 'Lrclib-Client': 'foreign-song-learner v0.1' } })
+  if (!searchRes.ok) return null
+  const results: { syncedLyrics?: string }[] = await searchRes.json()
   return results.find(r => r.syncedLyrics)?.syncedLyrics ?? null
 }
 
 const JSON_SCHEMA = `Each element must follow this exact schema:
-{"index":<number>,"phonetic":"<full line transcription>","segments":[{"original":"<word or phrase>","phonetic":"<transcription>"}]}
+{"index":<number>,"phonetic":"<full line transcription>","translation":"<natural translation into the target language>","segments":[{"original":"<word or phrase>","phonetic":"<transcription>"}]}
 Return ONLY the JSON array. No explanation, no markdown fences.`
 
 const PHONETIC_PROMPTS: Record<string, string> = {
@@ -43,7 +55,7 @@ async function generatePhonetics(
   language: string,
   phoneticLang: PhoneticLang,
   lines: { index: number; text: string }[]
-): Promise<{ index: number; phonetic: string; segments: { original: string; phonetic: string }[] }[]> {
+): Promise<{ index: number; phonetic: string; translation: string; segments: { original: string; phonetic: string }[] }[]> {
   const systemPrompt = PHONETIC_PROMPTS[phoneticLang]
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
@@ -116,7 +128,7 @@ export async function POST(req: NextRequest) {
   })
 
   // Fetch LRC lyrics
-  const lrcText = await fetchLRC(body.lrcQuery ?? title)
+  const lrcText = await fetchLRC(title, artist, durationSeconds, body.lrcQuery)
   if (!lrcText) {
     return NextResponse.json({ error: 'lyrics_not_found' }, { status: 404 })
   }
@@ -133,7 +145,7 @@ export async function POST(req: NextRequest) {
     )
   } catch (claudeError) {
     console.error('Claude phonetics generation failed:', claudeError)
-    const fallbackLines: LyricLine[] = rawLines.map(line => ({ ...line, phonetic: '', segments: [] }))
+    const fallbackLines: LyricLine[] = rawLines.map(line => ({ ...line, phonetic: '', translation: '', segments: [] }))
     try {
       await prisma.lyrics.create({ data: { songId: song.id, phoneticLang, lines: JSON.stringify(fallbackLines) } })
     } catch (dbError) {
@@ -149,13 +161,13 @@ export async function POST(req: NextRequest) {
   const COLORS = [0, 1, 2, 3, 4]
   const lines: LyricLine[] = rawLines.map((line, i) => {
     const pd = phoneticData.find(p => p.index === i)
-    if (!pd || !pd.segments) return { ...line, phonetic: pd?.phonetic ?? '', segments: [] }
+    if (!pd || !pd.segments) return { ...line, phonetic: pd?.phonetic ?? '', translation: pd?.translation ?? '', segments: [] }
     const segments: Segment[] = pd.segments.map((seg, j) => ({
       original: seg.original,
       phonetic: seg.phonetic,
       color: COLORS[j % COLORS.length],
     }))
-    return { ...line, phonetic: pd.phonetic, segments }
+    return { ...line, phonetic: pd.phonetic, translation: pd.translation ?? '', segments }
   })
 
   await prisma.lyrics.create({ data: { songId: song.id, phoneticLang, lines: JSON.stringify(lines) } })

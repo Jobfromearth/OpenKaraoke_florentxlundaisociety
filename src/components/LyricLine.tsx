@@ -14,11 +14,12 @@ interface LyricLineProps {
   line: LyricLineType
   isActive: boolean
   showPhonetic: boolean
+  showTranslation: boolean
   progress: number   // 0–1, used in loop mode for left-to-right scan
   onClick: () => void
 }
 
-export default function LyricLine({ line, isActive, showPhonetic, progress, onClick }: LyricLineProps) {
+export default function LyricLine({ line, isActive, showPhonetic, showTranslation, progress, onClick }: LyricLineProps) {
   const activeSegmentIndex = isActive && progress > 0
     ? Math.floor(progress * line.segments.length)
     : line.segments.length // all lit when not in scan mode
@@ -64,6 +65,11 @@ export default function LyricLine({ line, isActive, showPhonetic, progress, onCl
             <span className="text-gray-400">{line.phonetic || '—'}</span>
           )}
         </div>
+      )}
+
+      {/* Translation row */}
+      {showTranslation && line.translation && (
+        <div className="text-xs mt-0.5 text-gray-400 italic">{line.translation}</div>
       )}
     </button>
   )

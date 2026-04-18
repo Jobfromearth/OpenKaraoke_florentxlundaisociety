@@ -28,7 +28,9 @@ export async function GET(req: NextRequest) {
 
   const searchRes = await fetch(searchUrl.toString())
   if (!searchRes.ok) {
-    return NextResponse.json({ error: 'YouTube search failed' }, { status: 502 })
+    const body = await searchRes.json().catch(() => null)
+    console.error('YouTube search API error:', searchRes.status, JSON.stringify(body))
+    return NextResponse.json({ error: 'YouTube search failed', details: body }, { status: 502 })
   }
   const searchData = await searchRes.json()
   const items = searchData.items ?? []

@@ -8,7 +8,8 @@ export interface LyricLine {
   time: number       // 行开始时间（秒）
   endTime: number    // 行结束时间（秒，等于下一行 time）
   text: string       // 原文歌词
-  phonetic: string   // 完整中文音译
+  phonetic: string   // 完整音译
+  translation: string // 整行翻译
   segments: Segment[] // 词级映射分组
 }
 

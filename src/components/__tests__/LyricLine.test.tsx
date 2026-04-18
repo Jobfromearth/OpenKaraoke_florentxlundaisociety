@@ -7,6 +7,7 @@ const mockLine: LyricLineType = {
   endTime: 15.2,
   text: "you're looking for",
   phonetic: '有儿 路奇恩佛',
+  translation: '你在寻找',
   segments: [
     { original: "you're", phonetic: '有儿', color: 0 },
     { original: 'looking for', phonetic: '路奇恩佛', color: 1 },
@@ -16,7 +17,7 @@ const mockLine: LyricLineType = {
 describe('LyricLine', () => {
   it('renders each segment original text', () => {
     render(
-      <LyricLine line={mockLine} isActive={false} showPhonetic={true} progress={0} onClick={jest.fn()} />
+      <LyricLine line={mockLine} isActive={false} showPhonetic={true} showTranslation={false} progress={0} onClick={jest.fn()} />
     )
     expect(screen.getByText("you're")).toBeInTheDocument()
     expect(screen.getByText('looking for')).toBeInTheDocument()
@@ -24,7 +25,7 @@ describe('LyricLine', () => {
 
   it('renders phonetic text when showPhonetic is true', () => {
     render(
-      <LyricLine line={mockLine} isActive={false} showPhonetic={true} progress={0} onClick={jest.fn()} />
+      <LyricLine line={mockLine} isActive={false} showPhonetic={true} showTranslation={false} progress={0} onClick={jest.fn()} />
     )
     expect(screen.getByText('有儿')).toBeInTheDocument()
     expect(screen.getByText('路奇恩佛')).toBeInTheDocument()
@@ -32,7 +33,7 @@ describe('LyricLine', () => {
 
   it('hides phonetic text when showPhonetic is false', () => {
     render(
-      <LyricLine line={mockLine} isActive={false} showPhonetic={false} progress={0} onClick={jest.fn()} />
+      <LyricLine line={mockLine} isActive={false} showPhonetic={false} showTranslation={false} progress={0} onClick={jest.fn()} />
     )
     expect(screen.queryByText('有儿')).not.toBeInTheDocument()
   })
@@ -48,7 +49,7 @@ describe('LyricLine', () => {
 
   it('applies active highlight class when isActive is true', () => {
     render(
-      <LyricLine line={mockLine} isActive={true} showPhonetic={true} progress={0} onClick={jest.fn()} />
+      <LyricLine line={mockLine} isActive={true} showPhonetic={true} showTranslation={false} progress={0} onClick={jest.fn()} />
     )
     expect(screen.getByRole('button').className).toMatch(/bg-yellow/)
   })
@@ -58,7 +59,7 @@ describe('LyricLine', () => {
     // segment 0 (i=0): i <= 0 → lit  → text-blue-600
     // segment 1 (i=1): i >  0 → dim  → text-rose-200 (NOT text-rose-600)
     const { container } = render(
-      <LyricLine line={mockLine} isActive={true} showPhonetic={false} progress={0.1} onClick={jest.fn()} />
+      <LyricLine line={mockLine} isActive={true} showPhonetic={false} showTranslation={false} progress={0.1} onClick={jest.fn()} />
     )
     const spans = container.querySelectorAll('div.flex span')
     // Second segment should carry the dim class, not the full color class
@@ -75,10 +76,11 @@ describe('LyricLine', () => {
       endTime: 8,
       text: 'fallback plain text',
       phonetic: 'fallback phonetic',
+      translation: '',
       segments: [],
     }
     render(
-      <LyricLine line={emptySegmentsLine} isActive={false} showPhonetic={true} progress={0} onClick={jest.fn()} />
+      <LyricLine line={emptySegmentsLine} isActive={false} showPhonetic={true} showTranslation={false} progress={0} onClick={jest.fn()} />
     )
     expect(screen.getByText('fallback plain text')).toBeInTheDocument()
     expect(screen.getByText('fallback phonetic')).toBeInTheDocument()

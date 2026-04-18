@@ -10,6 +10,7 @@ interface LyricsPanelProps {
   progress: number
   loopLine: LyricLine | null
   showPhonetic: boolean
+  showTranslation: boolean
   onLineClick: (line: LyricLine) => void
 }
 
@@ -19,6 +20,7 @@ export default function LyricsPanel({
   progress,
   loopLine,
   showPhonetic,
+  showTranslation,
   onLineClick,
 }: LyricsPanelProps) {
   const activeRef = useRef<HTMLDivElement>(null)
@@ -37,6 +39,7 @@ export default function LyricsPanel({
             line={line}
             isActive={i === activeIndex}
             showPhonetic={showPhonetic}
+            showTranslation={showTranslation}
             progress={i === activeIndex && loopLine !== null ? progress : 0}
             onClick={() => onLineClick(line)}
           />
