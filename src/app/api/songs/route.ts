@@ -6,9 +6,9 @@ import type { LyricLine, Segment, PhoneticLang } from '@/lib/types'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-async function fetchLRC(title: string): Promise<string | null> {
+async function fetchLRC(query: string): Promise<string | null> {
   const url = new URL('https://lrclib.net/api/search')
-  url.searchParams.set('track_name', title)
+  url.searchParams.set('track_name', query.toLowerCase())
   const res = await fetch(url.toString(), { headers: { 'Lrclib-Client': 'foreign-song-learner v0.1' } })
   if (!res.ok) return null
   const results: { syncedLyrics?: string }[] = await res.json()
@@ -74,7 +74,7 @@ export async function GET() {
 
 // POST /api/songs — create or retrieve song with lyrics+phonetics
 export async function POST(req: NextRequest) {
-  let body: { youtubeId: string; title: string; artist: string; language: string; phoneticLang?: string; thumbnailUrl: string; durationSeconds: number }
+  let body: { youtubeId: string; title: string; artist: string; language: string; phoneticLang?: string; lrcQuery?: string; thumbnailUrl: string; durationSeconds: number }
   try {
     body = await req.json()
   } catch {
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
   })
 
   // Fetch LRC lyrics
-  const lrcText = await fetchLRC(title)
+  const lrcText = await fetchLRC(body.lrcQuery ?? title)
   if (!lrcText) {
     return NextResponse.json({ error: 'lyrics_not_found' }, { status: 404 })
   }

@@ -21,7 +21,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleSelect = async (result: YouTubeSearchResult & { language: string }) => {
+  const handleSelect = async (result: YouTubeSearchResult & { language: string; query: string }) => {
     setLoading(true)
     setError(null)
     try {
@@ -34,6 +34,7 @@ export default function HomePage() {
           artist: result.channelTitle,
           language: result.language,
           phoneticLang,
+          lrcQuery: result.query,
           thumbnailUrl: result.thumbnailUrl,
           durationSeconds: result.durationSeconds,
         }),
