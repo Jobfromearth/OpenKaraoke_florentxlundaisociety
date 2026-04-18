@@ -81,6 +81,7 @@ async function buildPipeline(micStream: MediaStream): Promise<AudioNodes> {
 export function useAudioMixer() {
   const nodesRef = useRef<AudioNodes | null>(null)
   const buildingRef = useRef(false)
+  const recordingStartingRef = useRef(false)
   const recorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -147,6 +148,8 @@ export function useAudioMixer() {
 
   const startRecording = useCallback(async () => {
     if (!nodesRef.current) return
+    if (recordingStartingRef.current) return
+    recordingStartingRef.current = true
     try {
       const displayStream = await navigator.mediaDevices.getDisplayMedia({ video: false, audio: true })
       displayStreamRef.current = displayStream
@@ -172,24 +175,27 @@ export function useAudioMixer() {
         if (e.data.size > 0) chunksRef.current.push(e.data)
       }
       recorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
+        const blob = new Blob(chunksRef.current, { type: mimeType })
         recordingBlobRef.current = blob
         setHasRecording(true)
         if (!hasAudio) setError('录音未包含音乐（未选择共享标签页音频）')
       }
 
       recorder.start()
+      recordingStartingRef.current = false
       recorderRef.current = recorder
       setIsRecording(true)
       setRecordingTime(0)
       timerRef.current = setInterval(() => setRecordingTime(t => t + 1), 1000)
     } catch {
+      recordingStartingRef.current = false
       // user cancelled getDisplayMedia — do nothing
     }
   }, [])
 
   const stopRecording = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current)
+    timerRef.current = null
     recorderRef.current?.stop()
     displayStreamRef.current?.getTracks().forEach(t => t.stop())
     displayStreamRef.current = null
