@@ -34,3 +34,5 @@ export interface YouTubeSearchResult {
   thumbnailUrl: string
   durationSeconds: number
 }
+
+export type PhoneticLang = 'zh' | 'en' | 'ja' | 'sv'
