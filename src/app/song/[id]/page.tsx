@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import LyricsPanel from '@/components/LyricsPanel'
 import LoopController from '@/components/LoopController'
 import PhoneticToggle from '@/components/PhoneticToggle'
@@ -18,6 +18,8 @@ import type { SongWithLyrics, LyricLine } from '@/lib/types'
 export default function SongPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const phoneticLang = searchParams.get('phonetic') ?? 'zh'
   const { t } = useUILang()
   const mixer = useAudioMixer()
   const [song, setSong] = useState<SongWithLyrics | null>(null)
@@ -40,7 +42,7 @@ export default function SongPage() {
   )
 
   useEffect(() => {
-    fetch(`/api/songs/${id}`)
+    fetch(`/api/songs/${id}?phoneticLang=${phoneticLang}`)
       .then(res => {
         if (!res.ok) throw new Error('Not found')
         return res.json()

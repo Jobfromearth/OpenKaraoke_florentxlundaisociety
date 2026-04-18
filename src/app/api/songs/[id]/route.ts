@@ -3,10 +3,11 @@ import { prisma } from '@/lib/prisma'
 import type { LyricLine } from '@/lib/types'
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
+  const phoneticLang = req.nextUrl.searchParams.get('phoneticLang') ?? 'zh'
 
   let song
   try {
@@ -21,9 +22,11 @@ export async function GET(
   if (!song) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   let lines: LyricLine[] = []
-  if (song.lyrics) {
+  const matchedLyrics = song.lyrics.find(l => l.phoneticLang === phoneticLang)
+    ?? song.lyrics[0]
+  if (matchedLyrics) {
     try {
-      lines = JSON.parse(song.lyrics.lines) as LyricLine[]
+      lines = JSON.parse(matchedLyrics.lines) as LyricLine[]
     } catch {
       lines = []
     }
