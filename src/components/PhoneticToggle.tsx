@@ -1,0 +1,21 @@
+'use client'
+
+interface PhoneticToggleProps {
+  showPhonetic: boolean
+  onToggle: () => void
+}
+
+export default function PhoneticToggle({ showPhonetic, onToggle }: PhoneticToggleProps) {
+  return (
+    <button
+      onClick={onToggle}
+      className={`text-xs px-3 py-1 rounded-full border transition-colors ${
+        showPhonetic
+          ? 'bg-blue-50 border-blue-300 text-blue-700'
+          : 'bg-gray-50 border-gray-300 text-gray-500'
+      }`}
+    >
+      {showPhonetic ? '隐藏音译' : '显示音译'}
+    </button>
+  )
+}
