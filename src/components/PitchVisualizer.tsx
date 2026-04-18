@@ -29,6 +29,8 @@ function detectPitch(buffer: Float32Array, sampleRate: number): number {
 }
 
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+const MIN_FREQ = 65    // C2
+const MAX_FREQ = 1047  // C6
 
 function freqToNote(freq: number): string {
   if (freq <= 0) return '--'
@@ -37,49 +39,93 @@ function freqToNote(freq: number): string {
   return `${NOTE_NAMES[((midi % 12) + 12) % 12]}${octave}`
 }
 
+function freqToY(freq: number, H: number): number {
+  return H - (Math.log2(Math.max(freq, MIN_FREQ) / MIN_FREQ) / Math.log2(MAX_FREQ / MIN_FREQ)) * H
+}
+
+interface GuideNote { freq: number; label: string; primary: boolean }
+const GUIDE_NOTES: GuideNote[] = [
+  { freq: 65,   label: 'C2',   primary: true },
+  { freq: 110,  label: 'A2',   primary: false },
+  { freq: 131,  label: 'C3',   primary: true },
+  { freq: 220,  label: 'A3',   primary: false },
+  { freq: 262,  label: 'C4 ♩', primary: true },
+  { freq: 440,  label: 'A4',   primary: false },
+  { freq: 523,  label: 'C5',   primary: true },
+  { freq: 880,  label: 'A5',   primary: false },
+  { freq: 1047, label: 'C6',   primary: true },
+]
+
+const HISTORY = 120   // ~3 s at 40 fps
+const DATA_EVERY = 1  // sample every frame
+
 export default function PitchVisualizer({ analyserNode }: PitchVisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rafRef = useRef<number>(0)
   const pitchHistoryRef = useRef<number[]>([])
+  const frameCountRef = useRef<number>(0)
 
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas || !analyserNode) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    const ctx = canvas?.getContext('2d') ?? null
+
+    if (!canvas || !ctx) return
+
+    if (!analyserNode) {
+      function drawPlaceholder() {
+        const W = canvas!.width || 300
+        const H = canvas!.height || 120
+        ctx!.clearRect(0, 0, W, H)
+        ctx!.font = '9px monospace'
+        GUIDE_NOTES.forEach(({ freq, label, primary }) => {
+          const y = freqToY(freq, H)
+          ctx!.strokeStyle = primary ? 'rgba(96,165,250,0.18)' : 'rgba(96,165,250,0.08)'
+          ctx!.lineWidth = 1
+          ctx!.beginPath()
+          ctx!.moveTo(0, y)
+          ctx!.lineTo(W, y)
+          ctx!.stroke()
+          ctx!.fillStyle = primary ? 'rgba(96,165,250,0.35)' : 'rgba(96,165,250,0.18)'
+          ctx!.fillText(label, 3, y - 2)
+        })
+      }
+      drawPlaceholder()
+      return
+    }
 
     const sampleRate = (analyserNode.context as AudioContext).sampleRate
     const timeData = new Float32Array(analyserNode.fftSize)
-    const freqData = new Uint8Array(analyserNode.frequencyBinCount)
-    const HISTORY = 120   // ~3 s at 40 fps
 
     function draw() {
       rafRef.current = requestAnimationFrame(draw)
+      frameCountRef.current++
       analyserNode!.getFloatTimeDomainData(timeData)
-      analyserNode!.getByteFrequencyData(freqData)
 
-      const W = canvas!.width
-      const H = canvas!.height
+      const W = canvas!.width || 1
+      const H = canvas!.height || 1
       ctx!.clearRect(0, 0, W, H)
 
-      // ── Volume bar (bottom 25%) ──────────────────────────────────────────
-      const volH = Math.floor(H * 0.25)
-      const volY = H - volH
-      let sum = 0
-      for (let i = 0; i < freqData.length; i++) sum += freqData[i]
-      const vol = sum / freqData.length / 255
-      ctx!.fillStyle = 'rgba(74,222,128,0.12)'
-      ctx!.fillRect(0, volY, W, volH)
-      ctx!.fillStyle = '#4ade80'
-      ctx!.fillRect(0, volY, W * vol, volH)
+      // ── Guide lines + labels ────────────────────────────────────────────────
+      ctx!.font = '9px monospace'
+      GUIDE_NOTES.forEach(({ freq, label, primary }) => {
+        const y = freqToY(freq, H)
+        ctx!.strokeStyle = primary ? 'rgba(96,165,250,0.18)' : 'rgba(96,165,250,0.08)'
+        ctx!.lineWidth = 1
+        ctx!.beginPath()
+        ctx!.moveTo(0, y)
+        ctx!.lineTo(W, y)
+        ctx!.stroke()
+        ctx!.fillStyle = primary ? 'rgba(96,165,250,0.35)' : 'rgba(96,165,250,0.18)'
+        ctx!.fillText(label, 3, y - 2)
+      })
 
-      // ── Pitch history (top 75%) ──────────────────────────────────────────
-      const pitchH = volY
-      const MIN_FREQ = 80
-      const MAX_FREQ = 1000
-      const freq = detectPitch(timeData, sampleRate)
-      pitchHistoryRef.current.push(freq)
-      if (pitchHistoryRef.current.length > HISTORY) pitchHistoryRef.current.shift()
+      // ── Pitch history ───────────────────────────────────────────────────────
+      let freq = pitchHistoryRef.current[pitchHistoryRef.current.length - 1] ?? -1
+      if (frameCountRef.current % DATA_EVERY === 0) {
+        freq = detectPitch(timeData, sampleRate)
+        pitchHistoryRef.current.push(freq)
+        if (pitchHistoryRef.current.length > HISTORY) pitchHistoryRef.current.shift()
+      }
 
       ctx!.strokeStyle = '#60a5fa'
       ctx!.lineWidth = 1.5
@@ -88,22 +134,18 @@ export default function PitchVisualizer({ analyserNode }: PitchVisualizerProps) 
       pitchHistoryRef.current.forEach((f, i) => {
         if (f <= 0) return
         const x = (i / HISTORY) * W
-        const y = pitchH - (Math.log2(Math.max(f, MIN_FREQ) / MIN_FREQ) / Math.log2(MAX_FREQ / MIN_FREQ)) * pitchH
+        const y = freqToY(f, H)
         if (!started) { ctx!.moveTo(x, y); started = true }
         else ctx!.lineTo(x, y)
       })
       ctx!.stroke()
 
-      // ── Labels ───────────────────────────────────────────────────────────
+      // ── Current note label ──────────────────────────────────────────────────
       if (freq > 0) {
         ctx!.fillStyle = '#60a5fa'
-        ctx!.font = '11px monospace'
-        ctx!.fillText(freqToNote(freq), 4, 14)
+        ctx!.font = 'bold 11px monospace'
+        ctx!.fillText(freqToNote(freq), W - 32, 14)
       }
-      const db = vol > 0 ? Math.round(20 * Math.log10(vol)) : null
-      ctx!.fillStyle = '#4ade80'
-      ctx!.font = '11px monospace'
-      ctx!.fillText(db !== null ? `${db}dB` : '-∞', 4, H - 4)
     }
 
     draw()
