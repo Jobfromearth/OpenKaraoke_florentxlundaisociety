@@ -52,4 +52,35 @@ describe('LyricLine', () => {
     )
     expect(screen.getByRole('button').className).toMatch(/bg-yellow/)
   })
+
+  it('dims later segments during progress scan when isActive and progress > 0', () => {
+    // With 2 segments and progress=0.1: activeSegmentIndex = Math.floor(0.1 * 2) = 0
+    // segment 0 (i=0): i <= 0 → lit  → text-blue-600
+    // segment 1 (i=1): i >  0 → dim  → text-rose-200 (NOT text-rose-600)
+    const { container } = render(
+      <LyricLine line={mockLine} isActive={true} showPhonetic={false} progress={0.1} onClick={jest.fn()} />
+    )
+    const spans = container.querySelectorAll('div.flex span')
+    // Second segment should carry the dim class, not the full color class
+    expect(spans[1].className).toContain('text-rose-200')
+    expect(spans[1].className).not.toContain('text-rose-600')
+    // First segment should still be fully lit
+    expect(spans[0].className).toContain('text-blue-600')
+    expect(spans[0].className).not.toContain('text-blue-200')
+  })
+
+  it('renders line.text directly when segments array is empty', () => {
+    const emptySegmentsLine: LyricLineType = {
+      time: 5,
+      endTime: 8,
+      text: 'fallback plain text',
+      phonetic: 'fallback phonetic',
+      segments: [],
+    }
+    render(
+      <LyricLine line={emptySegmentsLine} isActive={false} showPhonetic={true} progress={0} onClick={jest.fn()} />
+    )
+    expect(screen.getByText('fallback plain text')).toBeInTheDocument()
+    expect(screen.getByText('fallback phonetic')).toBeInTheDocument()
+  })
 })
