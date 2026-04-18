@@ -8,6 +8,10 @@ const mockResults: YouTubeSearchResult[] = [
 ]
 
 describe('SearchBar', () => {
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
   it('renders search input', () => {
     render(<SearchBar onSelect={jest.fn()} language="en" />)
     expect(screen.getByPlaceholderText(/搜索歌曲/)).toBeInTheDocument()
@@ -40,7 +44,7 @@ describe('SearchBar', () => {
     fireEvent.submit(screen.getByRole('search'))
 
     await waitFor(() => screen.getByText('Hello - Adele'))
-    fireEvent.click(screen.getByText('Hello - Adele'))
+    fireEvent.click(screen.getByRole('button', { name: /Hello - Adele/ }))
     expect(onSelect).toHaveBeenCalledWith({ ...mockResults[0], language: 'en' })
   })
 })
