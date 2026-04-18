@@ -4,7 +4,8 @@ import { useAudioMixer } from '../useAudioMixer'
 // ── Web Audio mocks ─────────────────────────────────────────────────────────
 const mockConnect = jest.fn()
 
-const makeGainNode = () => ({ connect: mockConnect, gain: { value: 0 } })
+const mockDisconnect = jest.fn()
+const makeGainNode = () => ({ connect: mockConnect, disconnect: mockDisconnect, gain: { value: 0 } })
 
 const mockAnalyser = {
   connect: mockConnect,
@@ -20,7 +21,7 @@ const mockRecDest = {
 }
 
 const mockCtx = {
-  createMediaStreamSource: jest.fn(() => ({ connect: mockConnect })),
+  createMediaStreamSource: jest.fn(() => ({ connect: mockConnect, disconnect: mockDisconnect })),
   createGain: jest.fn(makeGainNode),
   createAnalyser: jest.fn(() => mockAnalyser),
   createConvolver: jest.fn(() => mockConvolver),

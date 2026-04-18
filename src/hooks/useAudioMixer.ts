@@ -87,6 +87,8 @@ export function useAudioMixer() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const recordingBlobRef = useRef<Blob | null>(null)
   const displayStreamRef = useRef<MediaStream | null>(null)
+  const displaySourceRef = useRef<MediaStreamAudioSourceNode | null>(null)
+  const displayGainRef = useRef<GainNode | null>(null)
 
   const [isOpen, setIsOpen] = useState(false)
   const [isMonitoring, setIsMonitoring] = useState(false)
@@ -156,7 +158,9 @@ export function useAudioMixer() {
 
       const { ctx, recDest } = nodesRef.current
       const displaySource = ctx.createMediaStreamSource(displayStream)
+      displaySourceRef.current = displaySource
       const displayGain = ctx.createGain()
+      displayGainRef.current = displayGain
       displayGain.gain.value = 1
       displaySource.connect(displayGain)
       displayGain.connect(recDest)
@@ -197,6 +201,10 @@ export function useAudioMixer() {
     if (timerRef.current) clearInterval(timerRef.current)
     timerRef.current = null
     recorderRef.current?.stop()
+    displayGainRef.current?.disconnect()
+    displaySourceRef.current?.disconnect()
+    displayGainRef.current = null
+    displaySourceRef.current = null
     displayStreamRef.current?.getTracks().forEach(t => t.stop())
     displayStreamRef.current = null
     recorderRef.current = null
@@ -209,7 +217,9 @@ export function useAudioMixer() {
     const a = document.createElement('a')
     a.href = url
     a.download = `recording-${Date.now()}.webm`
+    document.body.appendChild(a)
     a.click()
+    document.body.removeChild(a)
     URL.revokeObjectURL(url)
   }, [])
 

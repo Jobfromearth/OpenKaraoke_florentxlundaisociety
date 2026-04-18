@@ -24,12 +24,12 @@ const mockMixer = {
   downloadRecording: jest.fn(),
 }
 
-jest.mock('../../hooks/useAudioMixer', () => ({
+jest.mock('@/hooks/useAudioMixer', () => ({
   useAudioMixer: () => mockMixer,
 }))
 
 // Stub MixerPanel to avoid complex rendering
-jest.mock('../MixerPanel', () =>
+jest.mock('@/components/MixerPanel', () =>
   ({ onClose }: { onClose: () => void }) => (
     <div data-testid="mixer-panel">
       <button onClick={onClose}>关闭</button>
