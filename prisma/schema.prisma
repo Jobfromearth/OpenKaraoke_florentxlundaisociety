@@ -1,0 +1,27 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Song {
+  id              String   @id @default(cuid())
+  youtubeId       String   @unique
+  title           String
+  artist          String
+  language        String
+  thumbnailUrl    String
+  durationSeconds Int
+  createdAt       DateTime @default(now())
+  lyrics          Lyrics?
+}
+
+model Lyrics {
+  id     String @id @default(cuid())
+  songId String @unique
+  song   Song   @relation(fields: [songId], references: [id])
+  lines  String // JSON array of LyricLine[]
+}
