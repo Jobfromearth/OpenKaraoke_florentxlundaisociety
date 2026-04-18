@@ -24,7 +24,7 @@ model Lyrics {
   songId       String
   phoneticLang String @default("zh")
   song         Song   @relation(fields: [songId], references: [id], onDelete: Cascade)
-  lines        String // JSON array of LyricLine[]
+  lines        String
 
   @@unique([songId, phoneticLang])
 }

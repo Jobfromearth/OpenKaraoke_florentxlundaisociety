@@ -1,8 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #09090B;
+  --foreground: #ededed;
+  --accent-glow: rgba(240, 192, 80, 0.15);
+  --accent-border: rgba(240, 192, 80, 0.5);
+  --color-accent: #F0C050;
+  --color-surface-2: rgba(255, 255, 255, 0.06);
+  --border-subtle: rgba(255, 255, 255, 0.1);
+  --color-text-3: rgba(255, 255, 255, 0.4);
 }
 
 @theme inline {
@@ -12,15 +18,250 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans, Arial, sans-serif);
+}
+
+/* ── Animations ─────────────────────────────────────────────── */
+
+@keyframes vinyl-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes glow-breathe {
+  0%, 100% { opacity: 0; }
+  50%       { opacity: 0.85; }
+}
+
+@keyframes ripple-out {
+  0%   { transform: scale(0.68); opacity: 0.55; }
+  100% { transform: scale(2.4);  opacity: 0; }
+}
+
+/* ── Homepage layout ─────────────────────────────────────────── */
+
+.home-root {
+  min-height: 100vh;
+  background: #09090B;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  padding: 60px 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.glow-amber {
+  width: 640px;
+  height: 640px;
+  background: radial-gradient(circle, rgba(240,192,80,0.18) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.glow-blue {
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, rgba(96,165,250,0.14) 0%, transparent 70%);
+  top: -120px;
+  right: -100px;
+}
+.glow-rose {
+  width: 360px;
+  height: 360px;
+  background: radial-gradient(circle, rgba(255,107,157,0.13) 0%, transparent 70%);
+  bottom: -100px;
+  left: -80px;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  position: relative;
+  z-index: 1;
+}
+
+.vinyl-stage {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ripple {
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(240, 192, 80, 0.45);
+  animation: ripple-out 2.8s ease-out infinite;
+  pointer-events: none;
+}
+.ripple-1 { animation-delay: 0s; }
+.ripple-2 { animation-delay: 0.7s; }
+.ripple-3 { animation-delay: 1.4s; }
+.ripple-4 { animation-delay: 2.1s; }
+
+.wordmark {
+  font-family: var(--font-abril, 'Abril Fatface', serif);
+  font-size: clamp(46px, 9vw, 72px);
+  font-weight: 400;
+  color: #F0C050;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  margin: 0;
+}
+
+.tagline {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.02em;
+  margin: 0;
+  text-align: center;
+  max-width: 340px;
+}
+
+.ui-lang-switcher {
+  display: flex;
+  gap: 6px;
+}
+.ui-lang-btn {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 4px 11px;
+  border-radius: 20px;
+  border: 1px solid rgba(240, 192, 80, 0.18);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.38);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.ui-lang-btn:hover {
+  color: rgba(255, 255, 255, 0.7);
+  border-color: rgba(240, 192, 80, 0.4);
+}
+.ui-lang-btn.active {
+  background: rgba(240, 192, 80, 0.14);
+  border-color: rgba(240, 192, 80, 0.55);
+  color: #F0C050;
+}
+
+.controls-card {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 20px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+  padding: 28px;
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(12px);
+}
+
+.lang-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lang-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.28);
+}
+.lang-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.lang-btn {
+  font-size: 13px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.lang-btn:hover {
+  border-color: rgba(240, 192, 80, 0.35);
+  color: rgba(255, 255, 255, 0.8);
+}
+.lang-btn.active {
+  background: rgba(240, 192, 80, 0.16);
+  border-color: rgba(240, 192, 80, 0.55);
+  color: #F0C050;
+}
+
+.status-msg {
+  font-size: 13px;
+  text-align: center;
+}
+.loading-msg {
+  color: rgba(255, 255, 255, 0.42);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.error-msg { color: #FF6B9D; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+/* SearchBar dark overrides */
+.controls-card input[type="text"],
+.controls-card input:not([type]) {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: rgba(255, 255, 255, 0.88) !important;
+}
+.controls-card input::placeholder {
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+.controls-card input:focus {
+  border-color: rgba(240, 192, 80, 0.5) !important;
+  box-shadow: 0 0 0 2px rgba(240, 192, 80, 0.15) !important;
+  outline: none !important;
+}
+.controls-card button[type="submit"] {
+  background: #F0C050 !important;
+  color: #09090B !important;
+  font-weight: 600 !important;
+}
+.controls-card button[type="submit"]:hover:not(:disabled) {
+  background: #F5CC60 !important;
+}
+.controls-card ul {
+  background: #1A1A1E !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+.controls-card ul button {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+.controls-card ul button:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+.controls-card ul p {
+  color: rgba(255, 255, 255, 0.45) !important;
 }

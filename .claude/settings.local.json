@@ -11,7 +11,17 @@
       "Bash(npm run:*)",
       "Bash(npx jest:*)",
       "Bash(git add:*)",
-      "Bash(git commit -m ':*)"
+      "Bash(git commit -m ':*)",
+      "Bash(npm test *)",
+      "Bash(npx tsc *)",
+      "Bash(git show *)",
+      "Bash(git commit *)",
+      "Bash(git checkout *)",
+      "Bash(git switch *)",
+      "Bash(git push *)",
+      "Bash(git log *)",
+      "Bash(npx prisma *)",
+      "Bash(git stash *)"
     ]
   }
 }
