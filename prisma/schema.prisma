@@ -16,12 +16,15 @@ model Song {
   thumbnailUrl    String
   durationSeconds Int
   createdAt       DateTime @default(now())
-  lyrics          Lyrics?
+  lyrics          Lyrics[]
 }
 
 model Lyrics {
-  id     String @id @default(cuid())
-  songId String @unique
-  song   Song   @relation(fields: [songId], references: [id], onDelete: Cascade)
-  lines  String // JSON array of LyricLine[]
+  id           String @id @default(cuid())
+  songId       String
+  phoneticLang String
+  song         Song   @relation(fields: [songId], references: [id], onDelete: Cascade)
+  lines        String // JSON array of LyricLine[]
+
+  @@unique([songId, phoneticLang])
 }
