@@ -198,3 +198,36 @@ describe('useAudioMixer — recording', () => {
     expect(result.current.isRecording).toBe(false)
   })
 })
+
+describe('useAudioMixer — initMic', () => {
+  it('exposes analyserNode without opening drawer', async () => {
+    const { result } = renderHook(() => useAudioMixer())
+    await act(async () => { result.current.initMic() })
+    expect(result.current.isOpen).toBe(false)
+    expect(result.current.analyserNode).toBe(mockAnalyser)
+  })
+
+  it('requests microphone', async () => {
+    const { result } = renderHook(() => useAudioMixer())
+    await act(async () => { result.current.initMic() })
+    expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledWith({ audio: true, video: false })
+  })
+
+  it('sets error when permission is denied', async () => {
+    ;(navigator.mediaDevices.getUserMedia as jest.Mock).mockRejectedValueOnce(
+      new DOMException('Permission denied', 'NotAllowedError')
+    )
+    const { result } = renderHook(() => useAudioMixer())
+    await act(async () => { result.current.initMic() })
+    expect(result.current.error).toBe('需要麦克风权限')
+    expect(result.current.isOpen).toBe(false)
+  })
+
+  it('is idempotent — second call resumes ctx without rebuilding', async () => {
+    const { result } = renderHook(() => useAudioMixer())
+    await act(async () => { result.current.initMic() })
+    await act(async () => { result.current.initMic() })
+    expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1)
+    expect(mockCtx.resume).toHaveBeenCalled()
+  })
+})

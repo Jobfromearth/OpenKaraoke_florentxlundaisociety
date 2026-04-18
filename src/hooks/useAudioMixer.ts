@@ -101,8 +101,7 @@ export function useAudioMixer() {
   const [error, setError] = useState<string | null>(null)
   const [hasRecording, setHasRecording] = useState(false)
 
-  const openDrawer = useCallback(async () => {
-    setIsOpen(true)
+  const initMic = useCallback(async () => {
     if (nodesRef.current) { await nodesRef.current.ctx.resume(); return }
     if (buildingRef.current) return
     buildingRef.current = true
@@ -119,6 +118,11 @@ export function useAudioMixer() {
       buildingRef.current = false
     }
   }, [])
+
+  const openDrawer = useCallback(async () => {
+    setIsOpen(true)
+    await initMic()
+  }, [initMic])
 
   const closeDrawer = useCallback(() => {
     setIsOpen(false)
@@ -235,7 +239,7 @@ export function useAudioMixer() {
     isOpen, isMonitoring, isRecording, recordingTime,
     micVolume, reverbAmount, echoAmount,
     analyserNode, error, hasRecording,
-    openDrawer, closeDrawer, toggleMonitor,
+    initMic, openDrawer, closeDrawer, toggleMonitor,
     setMicVolume, setReverb, setEcho,
     startRecording, stopRecording, downloadRecording,
   }
