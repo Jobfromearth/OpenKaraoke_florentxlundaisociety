@@ -1,10 +1,11 @@
 'use client'
 
 import MixerPanel from '@/components/MixerPanel'
-import { useAudioMixer } from '@/hooks/useAudioMixer'
+import type { useAudioMixer } from '@/hooks/useAudioMixer'
 
-export default function MixerDrawer() {
-  const mixer = useAudioMixer()
+type MixerState = ReturnType<typeof useAudioMixer>
+
+export default function MixerDrawer({ mixer }: { mixer: MixerState }) {
 
   return (
     <>
