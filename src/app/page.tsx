@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation'
 import SearchBar from '@/components/SearchBar'
 import LogoVinyl from '@/components/LogoVinyl'
 import { useUILang } from '@/components/UILangProvider'
-import type { YouTubeSearchResult } from '@/lib/types'
+import type { YouTubeSearchResult, PhoneticLang } from '@/lib/types'
 import type { UILang } from '@/lib/i18n'
 
 const SONG_LANG_CODES = ['en', 'ja', 'ko', 'es', 'sv']
+const PHONETIC_LANG_CODES: PhoneticLang[] = ['zh', 'en', 'ja', 'sv']
 const UI_LANGS: UILang[] = ['zh', 'en', 'sv']
 const UI_LANG_LABELS: Record<UILang, string> = { zh: '中', en: 'EN', sv: 'SV' }
 
@@ -16,6 +17,7 @@ export default function HomePage() {
   const router = useRouter()
   const { t, lang, setLang } = useUILang()
   const [language, setLanguage] = useState('en')
+  const [phoneticLang, setPhoneticLang] = useState<PhoneticLang>('zh')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -31,6 +33,7 @@ export default function HomePage() {
           title: result.title,
           artist: result.channelTitle,
           language: result.language,
+          phoneticLang,
           thumbnailUrl: result.thumbnailUrl,
           durationSeconds: result.durationSeconds,
         }),
@@ -45,7 +48,7 @@ export default function HomePage() {
         throw new Error(t.errorLoadFailed)
       }
       const song = await res.json()
-      router.push(`/song/${song.id}`)
+      router.push(`/song/${song.id}?phonetic=${phoneticLang}`)
     } catch {
       setError(t.errorLoadFailed)
       setLoading(false)
@@ -94,6 +97,21 @@ export default function HomePage() {
                 className={`lang-btn${language === code ? ' active' : ''}`}
               >
                 {t.songLanguages[code]}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="lang-filter">
+          <span className="lang-label">{t.phoneticLanguageLabel}</span>
+          <div className="lang-btns">
+            {PHONETIC_LANG_CODES.map(code => (
+              <button
+                key={code}
+                onClick={() => setPhoneticLang(code)}
+                className={`lang-btn${phoneticLang === code ? ' active' : ''}`}
+              >
+                {t.phoneticLangs[code]}
               </button>
             ))}
           </div>
