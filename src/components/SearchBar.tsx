@@ -4,11 +4,11 @@ import { useState } from 'react'
 import type { YouTubeSearchResult } from '@/lib/types'
 
 interface SearchBarProps {
-  onSelect: (result: YouTubeSearchResult) => void
+  onSelect: (result: YouTubeSearchResult & { language: string }) => void
   language: string
 }
 
-export default function SearchBar({ onSelect, language: _language }: SearchBarProps) {
+export default function SearchBar({ onSelect, language }: SearchBarProps) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<YouTubeSearchResult[]>([])
   const [loading, setLoading] = useState(false)
@@ -55,7 +55,7 @@ export default function SearchBar({ onSelect, language: _language }: SearchBarPr
           {results.map(result => (
             <li key={result.videoId}>
               <button
-                onClick={() => { onSelect(result); setResults([]) }}
+                onClick={() => { onSelect({ ...result, language }); setResults([]) }}
                 className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-50 text-left"
               >
                 {result.thumbnailUrl && (
