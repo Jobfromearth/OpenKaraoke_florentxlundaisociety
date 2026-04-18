@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest . --typescript --tailwind --app --src-dir --import-alias \"@/*\" --eslint --no-git)",
+      "Bash(cmd:*)",
+      "Bash(npm install:*)",
+      "Bash(node -e \"const jest = require\\('jest'\\); console.log\\(Object.keys\\(jest\\)\\)\")",
+      "Bash(node -e \"const c = require\\('@jest/schemas'\\); console.log\\(Object.keys\\(c\\)\\)\")",
+      "Bash(node:*)",
+      "Bash(npx create-next-app@latest:*)",
+      "Bash(npm run:*)",
+      "Bash(npx jest:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)"
+    ]
+  }
+}
