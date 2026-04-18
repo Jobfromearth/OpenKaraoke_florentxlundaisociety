@@ -59,7 +59,7 @@ async function generatePhonetics(
   const systemPrompt = PHONETIC_PROMPTS[phoneticLang]
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 4096,
+    max_tokens: 8096,
     system: systemPrompt,
     messages: [{
       role: 'user',
@@ -67,6 +67,7 @@ async function generatePhonetics(
     }],
   })
 
+  if (response.stop_reason === 'max_tokens') throw new Error('Claude response truncated (max_tokens reached)')
   const text = response.content[0].type === 'text' ? response.content[0].text.trim() : null
   if (!text) throw new Error('Claude returned no text content')
   const clean = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
