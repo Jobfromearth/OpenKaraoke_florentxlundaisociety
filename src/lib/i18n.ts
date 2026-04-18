@@ -1,3 +1,5 @@
+import type { PhoneticLang } from './types'
+
 export type UILang = 'zh' | 'en' | 'sv'
 
 export interface Translations {
@@ -23,7 +25,7 @@ export interface Translations {
   hideTranslation: string
   loopLabel: string
   exitLoop: string
-  phoneticLangs: Record<string, string>
+  phoneticLangs: Record<PhoneticLang, string>
   songLanguages: Record<string, string>
   mixer: string
   mixerHeadphone: string
