@@ -22,10 +22,10 @@ function detectPitch(buffer: Float32Array, sampleRate: number): number {
     let corr = 0
     for (let i = 0; i < MAX; i++) corr += Math.abs(buffer[i] - buffer[i + offset])
     corr = 1 - corr / MAX
-    if (corr > 0.9 && corr > lastCorr) { bestCorr = corr; bestOffset = offset }
+    if (corr > 0.9 && corr > lastCorr) { bestCorr = corr; bestOffset = offset; break }
     lastCorr = corr
   }
-  return bestCorr > 0.01 && bestOffset > 0 ? sampleRate / bestOffset : -1
+  return bestOffset > 0 ? sampleRate / bestOffset : -1
 }
 
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
