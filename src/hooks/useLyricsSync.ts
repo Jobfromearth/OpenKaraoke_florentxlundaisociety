@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { LyricLine } from '@/lib/types'
 
 export function useLyricsSync(
@@ -13,9 +13,9 @@ export function useLyricsSync(
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Register seekTo from YouTubePlayer
-  const registerSeek = (fn: (time: number) => void) => {
+  const registerSeek = useCallback((fn: (time: number) => void) => {
     seekRef.current = fn
-  }
+  }, [])
 
   useEffect(() => {
     if (!isPlaying || !getCurrentTime) {
@@ -38,6 +38,7 @@ export function useLyricsSync(
         if (lines[i].time <= currentTime) { idx = i; break }
       }
       setActiveIndex(idx)
+      if (idx < 0) { setProgress(0); return }
 
       if (idx >= 0) {
         const line = lines[idx]
