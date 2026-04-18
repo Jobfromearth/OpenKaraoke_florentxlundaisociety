@@ -1,6 +1,12 @@
 import { render } from '@testing-library/react'
 import PitchVisualizer from '../PitchVisualizer'
 
+// ResizeObserver mock — not available in jsdom
+global.ResizeObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  disconnect: jest.fn(),
+}))
+
 // Canvas mock — JSDOM doesn't implement canvas rendering
 HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
   clearRect: jest.fn(),

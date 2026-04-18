@@ -56,14 +56,27 @@ const GUIDE_NOTES: GuideNote[] = [
   { freq: 1047, label: 'C6',   primary: true },
 ]
 
-const HISTORY = 120   // ~3 s at 40 fps
-const DATA_EVERY = 1  // sample every frame
+const HISTORY = 120
+const DATA_EVERY = 4  // ≈15fps pitch samples → ~8s visible window
 
 export default function PitchVisualizer({ analyserNode }: PitchVisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rafRef = useRef<number>(0)
   const pitchHistoryRef = useRef<number[]>([])
   const frameCountRef = useRef<number>(0)
+
+  // Keep canvas buffer in sync with display size
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ro = new ResizeObserver(entries => {
+      const { width, height } = entries[0].contentRect
+      canvas.width = Math.round(width) || 1
+      canvas.height = Math.round(height) || 1
+    })
+    ro.observe(canvas)
+    return () => ro.disconnect()
+  }, [])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -90,7 +103,9 @@ export default function PitchVisualizer({ analyserNode }: PitchVisualizerProps) 
         })
       }
       drawPlaceholder()
-      return
+      const ro = new ResizeObserver(drawPlaceholder)
+      ro.observe(canvas)
+      return () => ro.disconnect()
     }
 
     const sampleRate = (analyserNode.context as AudioContext).sampleRate
@@ -155,8 +170,6 @@ export default function PitchVisualizer({ analyserNode }: PitchVisualizerProps) 
   return (
     <canvas
       ref={canvasRef}
-      width={300}
-      height={120}
       style={{ width: '100%', height: '100%', display: 'block' }}
     />
   )
