@@ -15,19 +15,23 @@ async function fetchLRC(query: string): Promise<string | null> {
   return results.find(r => r.syncedLyrics)?.syncedLyrics ?? null
 }
 
+const JSON_SCHEMA = `Each element must follow this exact schema:
+{"index":<number>,"phonetic":"<full line transcription>","segments":[{"original":"<word or phrase>","phonetic":"<transcription>"}]}
+Return ONLY the JSON array. No explanation, no markdown fences.`
+
 const PHONETIC_PROMPTS: Record<string, string> = {
-  zh: `你是一个专业的外语歌曲音译助手。将歌词转写为中国人能"按汉字发音来模拟演唱"的中文音译。
+  zh: `你是一个专业的外语歌曲音译助手。无论歌词是什么语言，都将每行转写为中国人能"按汉字发音来模拟演唱"的中文音译。
 要求：①贴近原语言发音 ②自然流畅可唱 ③按词/短语分组返回 segments。
-只返回合法 JSON 数组，不含其他任何文字或代码块标记。`,
-  en: `You are a phonetic transcription assistant for foreign-language song lyrics. Transcribe each lyric line into approximate English phonetic spellings that an English speaker can use to sing along.
+${JSON_SCHEMA}`,
+  en: `You are a phonetic transcription assistant. Regardless of the source language, transcribe each lyric line into approximate English phonetic spellings that an English speaker can sing along with.
 Rules: ① Stay close to the original pronunciation ② Natural to sing ③ Return word/phrase-level segments.
-Return only a valid JSON array with no other text or code fences.`,
-  ja: `あなたはプロの外国語歌詞音訳アシスタントです。歌詞の各行をカタカナで読み仮名（音訳）に変換してください。日本語話者がそのまま歌えるように、原語の発音に忠実なカタカナ表記を使ってください。
+${JSON_SCHEMA}`,
+  ja: `あなたはプロの歌詞音訳アシスタントです。歌詞の言語に関わらず、各行をカタカナ（日本語話者が歌えるよう原語の発音に忠実な読み仮名）に変換してください。
 要件：①原語の発音に忠実 ②歌いやすい ③単語・フレーズ単位でsegmentsに分けて返す。
-有効なJSON配列のみ返し、他のテキストやコードフェンスを含めないこと。`,
-  sv: `Du är en professionell fonetisk transkriptionsassistent för utländska låttexter. Transkribera varje textrad till fonetiska stavningar på svenska som en svensktalande person kan använda för att sjunga med.
+${JSON_SCHEMA}`,
+  sv: `Du är en professionell fonetisk transkriptionsassistent. Oavsett källspråk, transkribera varje textrad till fonetiska stavningar på svenska som en svensktalande person kan sjunga med.
 Regler: ① Håll dig nära originalets uttal ② Naturlig att sjunga ③ Returnera segment på ord-/frasnivå.
-Returnera endast en giltig JSON-array utan annan text eller kodstängsel.`,
+${JSON_SCHEMA}`,
 }
 
 const VALID_PHONETIC_LANGS = Object.keys(PHONETIC_PROMPTS)
