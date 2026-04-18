@@ -16,13 +16,12 @@ function detectPitch(buffer: Float32Array, sampleRate: number): number {
   if (rms < 0.01) return -1
 
   let bestOffset = -1
-  let bestCorr = 0
   let lastCorr = 1
   for (let offset = 1; offset < MAX; offset++) {
     let corr = 0
     for (let i = 0; i < MAX; i++) corr += Math.abs(buffer[i] - buffer[i + offset])
     corr = 1 - corr / MAX
-    if (corr > 0.9 && corr > lastCorr) { bestCorr = corr; bestOffset = offset; break }
+    if (corr > 0.9 && corr > lastCorr) { bestOffset = offset; break }
     lastCorr = corr
   }
   return bestOffset > 0 ? sampleRate / bestOffset : -1
@@ -65,23 +64,9 @@ export default function PitchVisualizer({ analyserNode }: PitchVisualizerProps) 
   const pitchHistoryRef = useRef<number[]>([])
   const frameCountRef = useRef<number>(0)
 
-  // Keep canvas buffer in sync with display size
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ro = new ResizeObserver(entries => {
-      const { width, height } = entries[0].contentRect
-      canvas.width = Math.round(width) || 1
-      canvas.height = Math.round(height) || 1
-    })
-    ro.observe(canvas)
-    return () => ro.disconnect()
-  }, [])
-
   useEffect(() => {
     const canvas = canvasRef.current
     const ctx = canvas?.getContext('2d') ?? null
-
     if (!canvas || !ctx) return
 
     if (!analyserNode) {
@@ -102,11 +87,26 @@ export default function PitchVisualizer({ analyserNode }: PitchVisualizerProps) 
           ctx!.fillText(label, 3, y - 2)
         })
       }
-      drawPlaceholder()
-      const ro = new ResizeObserver(drawPlaceholder)
+      // Single observer: resize canvas buffer then redraw — avoids ordering ambiguity
+      const ro = new ResizeObserver(entries => {
+        const { width, height } = entries[0].contentRect
+        canvas.width = Math.round(width) || 1
+        canvas.height = Math.round(height) || 1
+        drawPlaceholder()
+      })
       ro.observe(canvas)
+      drawPlaceholder()
       return () => ro.disconnect()
     }
+
+    // Active mode: sizing observer (RAF loop handles redraw each frame)
+    frameCountRef.current = 0
+    const ro = new ResizeObserver(entries => {
+      const { width, height } = entries[0].contentRect
+      canvas.width = Math.round(width) || 1
+      canvas.height = Math.round(height) || 1
+    })
+    ro.observe(canvas)
 
     const sampleRate = (analyserNode.context as AudioContext).sampleRate
     const timeData = new Float32Array(analyserNode.fftSize)
@@ -164,7 +164,10 @@ export default function PitchVisualizer({ analyserNode }: PitchVisualizerProps) 
     }
 
     draw()
-    return () => cancelAnimationFrame(rafRef.current)
+    return () => {
+      cancelAnimationFrame(rafRef.current)
+      ro.disconnect()
+    }
   }, [analyserNode])
 
   return (
