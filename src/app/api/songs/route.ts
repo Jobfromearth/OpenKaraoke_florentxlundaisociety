@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { prisma } from '@/lib/prisma'
 import { parseLRC } from '@/lib/lrc-parser'
-import type { LyricLine, Segment } from '@/lib/types'
+import type { LyricLine, Segment, PhoneticLang } from '@/lib/types'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -32,12 +32,14 @@ Regler: ① Håll dig nära originalets uttal ② Naturlig att sjunga ③ Return
 Returnera endast en giltig JSON-array utan annan text eller kodstängsel.`,
 }
 
+const VALID_PHONETIC_LANGS = Object.keys(PHONETIC_PROMPTS)
+
 async function generatePhonetics(
   language: string,
-  phoneticLang: string,
+  phoneticLang: PhoneticLang,
   lines: { index: number; text: string }[]
 ): Promise<{ index: number; phonetic: string; segments: { original: string; phonetic: string }[] }[]> {
-  const systemPrompt = PHONETIC_PROMPTS[phoneticLang] ?? PHONETIC_PROMPTS.zh
+  const systemPrompt = PHONETIC_PROMPTS[phoneticLang]
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 4096,
@@ -82,7 +84,6 @@ export async function POST(req: NextRequest) {
   }
   const { youtubeId, title, artist, language, thumbnailUrl, durationSeconds } = body
   const phoneticLang = body.phoneticLang ?? 'zh'
-  const VALID_PHONETIC_LANGS = ['zh', 'en', 'ja', 'sv']
   if (!VALID_PHONETIC_LANGS.includes(phoneticLang)) {
     return NextResponse.json({ error: 'Invalid phoneticLang' }, { status: 400 })
   }
@@ -122,7 +123,7 @@ export async function POST(req: NextRequest) {
   try {
     phoneticData = await generatePhonetics(
       language,
-      phoneticLang,
+      phoneticLang as PhoneticLang,
       rawLines.map((line, i) => ({ index: i, text: line.text }))
     )
   } catch (claudeError) {
