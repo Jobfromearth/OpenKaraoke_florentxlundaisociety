@@ -5,16 +5,22 @@ import { useParams, useRouter } from 'next/navigation'
 import LyricsPanel from '@/components/LyricsPanel'
 import LoopController from '@/components/LoopController'
 import PhoneticToggle from '@/components/PhoneticToggle'
+import TranslationToggle from '@/components/TranslationToggle'
 import YouTubePlayer from '@/components/YouTubePlayer'
+import LogoVinyl from '@/components/LogoVinyl'
+import MixerDrawer from '@/components/MixerDrawer'
 import { useLyricsSync } from '@/hooks/useLyricsSync'
+import { useUILang } from '@/components/UILangProvider'
 import type { SongWithLyrics, LyricLine } from '@/lib/types'
 
 export default function SongPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
+  const { t } = useUILang()
   const [song, setSong] = useState<SongWithLyrics | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [showPhonetic, setShowPhonetic] = useState(true)
+  const [showTranslation, setShowTranslation] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [playerReady, setPlayerReady] = useState(false)
 
@@ -36,7 +42,7 @@ export default function SongPage() {
         return res.json()
       })
       .then(setSong)
-      .catch(() => setError('歌曲加载失败'))
+      .catch(() => setError(t.songLoadError))
   }, [id])
 
   const handleLineClick = (line: LyricLine) => {
@@ -56,32 +62,87 @@ export default function SongPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-red-500">
-        {error} <button onClick={() => router.push('/')} className="ml-4 underline">返回首页</button>
+      <div
+        className="min-h-screen flex items-center justify-center gap-3"
+        style={{ background: 'var(--color-bg)' }}
+      >
+        <span className="text-sm" style={{ color: '#F87171' }}>{error}</span>
+        <button
+          onClick={() => router.push('/')}
+          className="text-xs underline transition-opacity hover:opacity-60"
+          style={{ color: 'var(--color-text-3)' }}
+        >
+          {t.backToHome}
+        </button>
       </div>
     )
   }
 
   if (!song) {
-    return <div className="min-h-screen flex items-center justify-center text-gray-400">加载中...</div>
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center gap-3"
+        style={{ background: 'var(--color-bg)' }}
+      >
+        <div className="spinner" />
+        <span className="text-sm" style={{ color: 'var(--color-text-3)' }}>{t.loading}</span>
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div
+      className="h-screen flex flex-col overflow-hidden"
+      style={{ background: 'var(--color-bg)' }}
+    >
       {/* Header */}
-      <header className="border-b px-6 py-3 flex items-center gap-4">
-        <button onClick={() => router.push('/')} className="text-gray-400 hover:text-gray-700">←</button>
+      <header
+        className="shrink-0 px-4 py-2.5 flex items-center gap-3"
+        style={{
+          background: 'var(--color-surface)',
+          borderBottom: '1px solid var(--border-subtle)',
+        }}
+      >
+        <button
+          onClick={() => router.push('/')}
+          className="flex items-center justify-center w-8 h-8 rounded-full shrink-0 transition-all duration-150 hover:brightness-125"
+          style={{
+            background: 'var(--color-surface-2)',
+            border: '1px solid var(--border-subtle)',
+            color: 'var(--color-text-2)',
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+          >
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        <LogoVinyl size={34} isPlaying={isPlaying} />
+
         <div className="flex-1 min-w-0">
-          <h1 className="font-semibold text-gray-900 truncate">{song.title}</h1>
-          <p className="text-xs text-gray-500">{song.artist}</p>
+          <h1 className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-1)' }}>
+            {song.title}
+          </h1>
+          <p className="text-xs truncate" style={{ color: 'var(--color-text-3)' }}>
+            {song.artist}
+          </p>
         </div>
-        <PhoneticToggle showPhonetic={showPhonetic} onToggle={() => setShowPhonetic(v => !v)} />
+
+        <div className="flex items-center gap-2">
+          <PhoneticToggle showPhonetic={showPhonetic} onToggle={() => setShowPhonetic(v => !v)} />
+          <TranslationToggle showTranslation={showTranslation} onToggle={() => setShowTranslation(v => !v)} />
+        </div>
       </header>
 
-      {/* Main layout */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Player (left / top on mobile) */}
-        <div className="w-full md:w-1/2 p-4 flex flex-col gap-4 shrink-0">
+      {/* Body */}
+      <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
+        {/* Player panel */}
+        <div
+          className="shrink-0 p-3 md:w-1/2 md:p-4"
+          style={{ borderBottom: '1px solid var(--border-subtle)' }}
+        >
           <YouTubePlayer
             videoId={song.youtubeId}
             onSeekTo={handleSeekTo}
@@ -90,21 +151,22 @@ export default function SongPage() {
           />
         </div>
 
-        {/* Lyrics panel (right / bottom on mobile) */}
-        <div className="flex-1 overflow-hidden border-l">
+        {/* Lyrics panel */}
+        <div className="flex-1 overflow-hidden min-h-0">
           <LyricsPanel
             lines={song.lines}
             activeIndex={activeIndex}
             progress={progress}
             loopLine={loopLine}
             showPhonetic={showPhonetic}
+            showTranslation={showTranslation}
             onLineClick={handleLineClick}
           />
         </div>
       </div>
 
-      {/* Loop controller bar */}
       <LoopController loopLine={loopLine} onExit={() => setLoopLine(null)} />
+      <MixerDrawer />
     </div>
   )
 }
