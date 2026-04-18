@@ -33,8 +33,11 @@ async function generatePhonetics(
     }],
   })
 
-  const text = response.content[0].type === 'text' ? response.content[0].text : '[]'
-  return JSON.parse(text)
+  const text = response.content[0].type === 'text' ? response.content[0].text.trim() : null
+  if (!text) throw new Error('Claude returned no text content')
+  // Strip markdown code fences if present
+  const clean = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
+  return JSON.parse(clean)
 }
 
 // GET /api/songs — list saved songs
@@ -57,15 +60,12 @@ export async function GET() {
 
 // POST /api/songs — create or retrieve song with lyrics+phonetics
 export async function POST(req: NextRequest) {
-  const body = await req.json() as {
-    youtubeId: string
-    title: string
-    artist: string
-    language: string
-    thumbnailUrl: string
-    durationSeconds: number
+  let body: { youtubeId: string; title: string; artist: string; language: string; thumbnailUrl: string; durationSeconds: number }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
-
   const { youtubeId, title, artist, language, thumbnailUrl, durationSeconds } = body
 
   // Return cached result if exists
@@ -74,11 +74,12 @@ export async function POST(req: NextRequest) {
     include: { lyrics: true },
   })
   if (existing?.lyrics) {
-    return NextResponse.json({
-      ...existing,
-      createdAt: existing.createdAt.toISOString(),
-      lines: JSON.parse(existing.lyrics.lines) as LyricLine[],
-    })
+    try {
+      const lines = JSON.parse(existing.lyrics.lines) as LyricLine[]
+      return NextResponse.json({ ...existing, createdAt: existing.createdAt.toISOString(), lines })
+    } catch {
+      // Corrupted cached data — fall through to re-generate
+    }
   }
 
   // Create or get song record
@@ -91,7 +92,7 @@ export async function POST(req: NextRequest) {
   // Fetch LRC lyrics
   const lrcText = await fetchLRC(title, artist, durationSeconds)
   if (!lrcText) {
-    return NextResponse.json({ error: 'lyrics_not_found', song: { ...song, createdAt: song.createdAt.toISOString() } }, { status: 404 })
+    return NextResponse.json({ error: 'lyrics_not_found' }, { status: 404 })
   }
 
   const rawLines = parseLRC(lrcText)
@@ -103,14 +104,14 @@ export async function POST(req: NextRequest) {
       language,
       rawLines.map((line, i) => ({ index: i, text: line.text }))
     )
-  } catch {
-    // Save lines without phonetics on failure
-    const fallbackLines: LyricLine[] = rawLines.map(line => ({
-      ...line,
-      phonetic: '',
-      segments: [],
-    }))
-    await prisma.lyrics.create({ data: { songId: song.id, lines: JSON.stringify(fallbackLines) } })
+  } catch (claudeError) {
+    console.error('Claude phonetics generation failed:', claudeError)
+    const fallbackLines: LyricLine[] = rawLines.map(line => ({ ...line, phonetic: '', segments: [] }))
+    try {
+      await prisma.lyrics.create({ data: { songId: song.id, lines: JSON.stringify(fallbackLines) } })
+    } catch (dbError) {
+      console.error('Failed to save fallback lyrics:', dbError)
+    }
     return NextResponse.json(
       { error: 'phonetics_failed', song: { ...song, createdAt: song.createdAt.toISOString() }, lines: fallbackLines },
       { status: 206 }
