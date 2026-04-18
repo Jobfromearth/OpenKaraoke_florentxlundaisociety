@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
   const COLORS = [0, 1, 2, 3, 4]
   const lines: LyricLine[] = rawLines.map((line, i) => {
     const pd = phoneticData.find(p => p.index === i)
-    if (!pd) return { ...line, phonetic: '', segments: [] }
+    if (!pd || !pd.segments) return { ...line, phonetic: pd?.phonetic ?? '', segments: [] }
     const segments: Segment[] = pd.segments.map((seg, j) => ({
       original: seg.original,
       phonetic: seg.phonetic,
