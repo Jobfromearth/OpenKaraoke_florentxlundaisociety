@@ -22,6 +22,6 @@ model Song {
 model Lyrics {
   id     String @id @default(cuid())
   songId String @unique
-  song   Song   @relation(fields: [songId], references: [id])
+  song   Song   @relation(fields: [songId], references: [id], onDelete: Cascade)
   lines  String // JSON array of LyricLine[]
 }
