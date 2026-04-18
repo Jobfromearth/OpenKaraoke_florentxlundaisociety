@@ -7,7 +7,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const phoneticLang = req.nextUrl.searchParams.get('phoneticLang') ?? 'zh'
+  const VALID_PHONETIC_LANGS = ['zh', 'en', 'ja', 'sv']
+  const rawPhoneticLang = req.nextUrl.searchParams.get('phoneticLang')
+  const phoneticLang = rawPhoneticLang && VALID_PHONETIC_LANGS.includes(rawPhoneticLang) ? rawPhoneticLang : 'zh'
 
   let song
   try {
@@ -32,5 +34,6 @@ export async function GET(
     }
   }
 
-  return NextResponse.json({ ...song, createdAt: song.createdAt.toISOString(), lines })
+  const { lyrics: _lyrics, ...songFields } = song
+  return NextResponse.json({ ...songFields, createdAt: song.createdAt.toISOString(), lines })
 }

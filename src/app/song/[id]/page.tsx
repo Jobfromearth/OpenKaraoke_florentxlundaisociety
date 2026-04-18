@@ -54,7 +54,7 @@ export default function SongPage() {
         }
       })
       .catch(() => setError(t.songLoadError))
-  }, [id])
+  }, [id, phoneticLang])
 
   useEffect(() => {
     mixer.initMic()
