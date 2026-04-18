@@ -80,6 +80,7 @@ async function buildPipeline(micStream: MediaStream): Promise<AudioNodes> {
 
 export function useAudioMixer() {
   const nodesRef = useRef<AudioNodes | null>(null)
+  const buildingRef = useRef(false)
   const recorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -99,18 +100,20 @@ export function useAudioMixer() {
 
   const openDrawer = useCallback(async () => {
     setIsOpen(true)
-    if (nodesRef.current) {
-      await nodesRef.current.ctx.resume()
-      return
-    }
+    if (nodesRef.current) { await nodesRef.current.ctx.resume(); return }
+    if (buildingRef.current) return
+    buildingRef.current = true
     try {
       const micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false })
       const nodes = await buildPipeline(micStream)
       nodesRef.current = nodes
       setAnalyserNode(nodes.analyser)
       setError(null)
-    } catch {
-      setError('需要麦克风权限')
+    } catch (e) {
+      const name = e instanceof DOMException ? e.name : ''
+      setError(name === 'NotFoundError' ? '未检测到麦克风设备' : '需要麦克风权限')
+    } finally {
+      buildingRef.current = false
     }
   }, [])
 
