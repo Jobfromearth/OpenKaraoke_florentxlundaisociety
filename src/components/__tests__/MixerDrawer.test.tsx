@@ -1,7 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import MixerDrawer from '../MixerDrawer'
 
-// Mock the hook so we control state without real AudioContext
 const mockMixer = {
   isOpen: false,
   isMonitoring: false,
@@ -11,6 +10,7 @@ const mockMixer = {
   reverbAmount: 0,
   echoAmount: 0,
   analyserNode: null,
+  initMic: jest.fn(),
   hasRecording: false,
   error: null,
   openDrawer: jest.fn(),
@@ -23,10 +23,6 @@ const mockMixer = {
   stopRecording: jest.fn(),
   downloadRecording: jest.fn(),
 }
-
-jest.mock('@/hooks/useAudioMixer', () => ({
-  useAudioMixer: () => mockMixer,
-}))
 
 // Stub MixerPanel to avoid complex rendering
 jest.mock('@/components/MixerPanel', () =>
@@ -41,33 +37,29 @@ beforeEach(() => jest.clearAllMocks())
 
 describe('MixerDrawer', () => {
   it('renders the trigger button', () => {
-    render(<MixerDrawer />)
+    render(<MixerDrawer mixer={{ ...mockMixer }} />)
     expect(screen.getByRole('button', { name: /调音台/i })).toBeInTheDocument()
   })
 
   it('calls openDrawer when trigger button is clicked', () => {
-    render(<MixerDrawer />)
+    render(<MixerDrawer mixer={{ ...mockMixer }} />)
     fireEvent.click(screen.getByRole('button', { name: /调音台/i }))
     expect(mockMixer.openDrawer).toHaveBeenCalled()
   })
 
   it('does not render MixerPanel when closed', () => {
-    render(<MixerDrawer />)
+    render(<MixerDrawer mixer={{ ...mockMixer }} />)
     expect(screen.queryByTestId('mixer-panel')).not.toBeInTheDocument()
   })
 
   it('renders MixerPanel when isOpen is true', () => {
-    mockMixer.isOpen = true
-    render(<MixerDrawer />)
+    render(<MixerDrawer mixer={{ ...mockMixer, isOpen: true }} />)
     expect(screen.getByTestId('mixer-panel')).toBeInTheDocument()
-    mockMixer.isOpen = false
   })
 
   it('calls closeDrawer when MixerPanel close button is clicked', () => {
-    mockMixer.isOpen = true
-    render(<MixerDrawer />)
+    render(<MixerDrawer mixer={{ ...mockMixer, isOpen: true }} />)
     fireEvent.click(screen.getByRole('button', { name: /关闭/i }))
     expect(mockMixer.closeDrawer).toHaveBeenCalled()
-    mockMixer.isOpen = false
   })
 })
