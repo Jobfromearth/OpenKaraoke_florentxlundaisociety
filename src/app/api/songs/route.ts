@@ -21,16 +21,19 @@ Return ONLY the JSON array. No explanation, no markdown fences.`
 
 const PHONETIC_PROMPTS: Record<string, string> = {
   zh: `你是一个专业的外语歌曲音译助手。无论歌词是什么语言，都将每行转写为中国人能"按汉字发音来模拟演唱"的中文音译。
-要求：①贴近原语言发音 ②自然流畅可唱 ③按词/短语分组返回 segments。
+要求：①输出必须全部是汉字，绝对不能使用原语言文字（不管是日文假名、英文字母还是其他文字）②贴近原语言发音 ③自然流畅可唱 ④按词/短语分组返回 segments。
+例如日语"大都会に"的中文音译应是"欧托卡伊尼"。
 ${JSON_SCHEMA}`,
   en: `You are a phonetic transcription assistant. Regardless of the source language, transcribe each lyric line into approximate English phonetic spellings that an English speaker can sing along with.
-Rules: ① Stay close to the original pronunciation ② Natural to sing ③ Return word/phrase-level segments.
+Rules: ① Output MUST use only English/Latin letters — never use the source language's native script (no kanji, kana, hangul, etc.) ② Stay close to the original pronunciation ③ Natural to sing ④ Return word/phrase-level segments.
+Example: Japanese "大都会に" → "oh-toh-kah-ee nee".
 ${JSON_SCHEMA}`,
-  ja: `あなたはプロの歌詞音訳アシスタントです。歌詞の言語に関わらず、各行をカタカナ（日本語話者が歌えるよう原語の発音に忠実な読み仮名）に変換してください。
-要件：①原語の発音に忠実 ②歌いやすい ③単語・フレーズ単位でsegmentsに分けて返す。
+  ja: `あなたはプロの歌詞音訳アシスタントです。歌詞の言語に関わらず、各行をカタカナに変換してください。
+要件：①出力は必ずカタカナのみ（ひらがな・漢字・ラテン文字など一切使用不可）②原語の発音に忠実 ③歌いやすい ④単語・フレーズ単位でsegmentsに分けて返す。
 ${JSON_SCHEMA}`,
   sv: `Du är en professionell fonetisk transkriptionsassistent. Oavsett källspråk, transkribera varje textrad till fonetiska stavningar på svenska som en svensktalande person kan sjunga med.
-Regler: ① Håll dig nära originalets uttal ② Naturlig att sjunga ③ Returnera segment på ord-/frasnivå.
+Regler: ① Utdata MÅSTE använda BARA svenska/latinska bokstäver — använd aldrig källspråkets egna skrift (inga kanji, kana, hangul, etc.) ② Håll dig nära originalets uttal ③ Naturlig att sjunga ④ Returnera segment på ord-/frasnivå.
+Exempel: japanska "大都会に" → "oh-to-kai-i nii".
 ${JSON_SCHEMA}`,
 }
 
