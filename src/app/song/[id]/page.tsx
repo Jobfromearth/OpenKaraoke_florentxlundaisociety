@@ -7,9 +7,11 @@ import LoopController from '@/components/LoopController'
 import PhoneticToggle from '@/components/PhoneticToggle'
 import TranslationToggle from '@/components/TranslationToggle'
 import YouTubePlayer from '@/components/YouTubePlayer'
+import PitchVisualizer from '@/components/PitchVisualizer'
 import LogoVinyl from '@/components/LogoVinyl'
 import MixerDrawer from '@/components/MixerDrawer'
 import { useLyricsSync } from '@/hooks/useLyricsSync'
+import { useAudioMixer } from '@/hooks/useAudioMixer'
 import { useUILang } from '@/components/UILangProvider'
 import type { SongWithLyrics, LyricLine } from '@/lib/types'
 
@@ -17,12 +19,14 @@ export default function SongPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const { t } = useUILang()
+  const mixer = useAudioMixer()
   const [song, setSong] = useState<SongWithLyrics | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [showPhonetic, setShowPhonetic] = useState(true)
   const [showTranslation, setShowTranslation] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [playerReady, setPlayerReady] = useState(false)
+  const [phoneticWarning, setPhoneticWarning] = useState(false)
 
   const getCurrentTimeRef = useRef<(() => number) | null>(null)
   const seekToRef = useRef<((time: number) => void) | null>(null)
@@ -41,9 +45,19 @@ export default function SongPage() {
         if (!res.ok) throw new Error('Not found')
         return res.json()
       })
-      .then(setSong)
+      .then((data: SongWithLyrics) => {
+        setSong(data)
+        if (data.lines?.length > 0 && data.lines.every(l => !l.phonetic?.trim())) {
+          setPhoneticWarning(true)
+        }
+      })
       .catch(() => setError(t.songLoadError))
   }, [id])
+
+  useEffect(() => {
+    mixer.initMic()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleLineClick = (line: LyricLine) => {
     setLoopLine(line)
@@ -136,11 +150,21 @@ export default function SongPage() {
         </div>
       </header>
 
+      {/* Phonetics empty warning */}
+      {phoneticWarning && (
+        <div
+          className="shrink-0 text-xs text-center px-4 py-1.5"
+          style={{ color: '#F87171', background: 'rgba(248,113,113,0.08)', borderBottom: '1px solid rgba(248,113,113,0.18)' }}
+        >
+          {t.errorPhoneticsFailed}
+        </div>
+      )}
+
       {/* Body */}
       <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
         {/* Player panel */}
         <div
-          className="shrink-0 p-3 md:w-1/2 md:p-4"
+          className="shrink-0 md:w-1/2 p-3 md:p-4 flex flex-col"
           style={{ borderBottom: '1px solid var(--border-subtle)' }}
         >
           <YouTubePlayer
@@ -149,6 +173,16 @@ export default function SongPage() {
             onGetCurrentTime={handleGetCurrentTime}
             onPlayingChange={setIsPlaying}
           />
+          <div
+            className="mt-2 rounded-lg overflow-hidden flex-1"
+            style={{
+              minHeight: '80px',
+              background: 'var(--color-surface-2)',
+              border: '1px solid var(--border-subtle)',
+            }}
+          >
+            <PitchVisualizer analyserNode={mixer.analyserNode} />
+          </div>
         </div>
 
         {/* Lyrics panel */}
@@ -166,7 +200,7 @@ export default function SongPage() {
       </div>
 
       <LoopController loopLine={loopLine} onExit={() => setLoopLine(null)} />
-      <MixerDrawer />
+      <MixerDrawer mixer={mixer} />
     </div>
   )
 }
