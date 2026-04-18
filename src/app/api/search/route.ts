@@ -43,10 +43,12 @@ export async function GET(req: NextRequest) {
   detailsUrl.searchParams.set('key', apiKey)
 
   const detailsRes = await fetch(detailsUrl.toString())
-  const detailsData = await detailsRes.json()
   const durationMap: Record<string, number> = {}
-  for (const item of detailsData.items ?? []) {
-    durationMap[item.id] = parseISO8601Duration(item.contentDetails.duration)
+  if (detailsRes.ok) {
+    const detailsData = await detailsRes.json()
+    for (const item of detailsData.items ?? []) {
+      durationMap[item.id] = parseISO8601Duration(item.contentDetails?.duration ?? '')
+    }
   }
 
   const results: YouTubeSearchResult[] = items.map((item: {
