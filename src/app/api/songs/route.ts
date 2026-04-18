@@ -7,14 +7,27 @@ import type { LyricLine, Segment, PhoneticLang } from '@/lib/types'
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 async function fetchLRC(title: string, artist: string, durationSeconds: number): Promise<string | null> {
-  const url = new URL('https://lrclib.net/api/get')
-  url.searchParams.set('track_name', title)
-  url.searchParams.set('artist_name', artist)
-  url.searchParams.set('duration', String(durationSeconds))
-  const res = await fetch(url.toString(), { headers: { 'Lrclib-Client': 'foreign-song-learner v0.1' } })
-  if (!res.ok) return null
-  const data = await res.json()
-  return data.syncedLyrics ?? null
+  const headers = { 'Lrclib-Client': 'foreign-song-learner v0.1' }
+
+  // Try exact match first (most accurate)
+  const exactUrl = new URL('https://lrclib.net/api/get')
+  exactUrl.searchParams.set('track_name', title)
+  exactUrl.searchParams.set('artist_name', artist)
+  exactUrl.searchParams.set('duration', String(durationSeconds))
+  const exactRes = await fetch(exactUrl.toString(), { headers })
+  if (exactRes.ok) {
+    const data = await exactRes.json()
+    if (data.syncedLyrics) return data.syncedLyrics
+  }
+
+  // Fall back to fuzzy search by title + artist
+  const searchUrl = new URL('https://lrclib.net/api/search')
+  searchUrl.searchParams.set('track_name', title)
+  searchUrl.searchParams.set('artist_name', artist)
+  const searchRes = await fetch(searchUrl.toString(), { headers })
+  if (!searchRes.ok) return null
+  const results: { syncedLyrics?: string }[] = await searchRes.json()
+  return results.find(r => r.syncedLyrics)?.syncedLyrics ?? null
 }
 
 const PHONETIC_PROMPTS: Record<string, string> = {
