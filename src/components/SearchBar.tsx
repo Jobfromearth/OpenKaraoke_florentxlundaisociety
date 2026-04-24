@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { YouTubeSearchResult } from '@/lib/types'
+import { useUILang } from '@/components/UILangProvider'
 
 interface SearchBarProps {
   onSelect: (result: YouTubeSearchResult & { language: string; query: string }) => void
@@ -13,6 +14,7 @@ export default function SearchBar({ onSelect, language }: SearchBarProps) {
   const [results, setResults] = useState<YouTubeSearchResult[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { t } = useUILang()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -21,10 +23,10 @@ export default function SearchBar({ onSelect, language }: SearchBarProps) {
     setError(null)
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
-      if (!res.ok) throw new Error('搜索失败')
+      if (!res.ok) throw new Error(t.searchError)
       setResults(await res.json())
     } catch {
-      setError('搜索失败，请重试')
+      setError(t.searchError)
     } finally {
       setLoading(false)
     }
@@ -35,7 +37,7 @@ export default function SearchBar({ onSelect, language }: SearchBarProps) {
       <form role="search" onSubmit={handleSubmit} className="flex gap-2">
         <input
           className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-          placeholder="搜索歌曲名 / 歌手..."
+          placeholder={t.searchPlaceholder}
           value={query}
           onChange={e => setQuery(e.target.value)}
         />
@@ -44,7 +46,7 @@ export default function SearchBar({ onSelect, language }: SearchBarProps) {
           disabled={loading}
           className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600 disabled:opacity-50"
         >
-          {loading ? '搜索中...' : '搜索'}
+          {loading ? t.searchingButton : t.searchButton}
         </button>
       </form>
 
