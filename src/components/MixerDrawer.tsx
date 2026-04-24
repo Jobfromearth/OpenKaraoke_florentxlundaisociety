@@ -2,10 +2,12 @@
 
 import MixerPanel from '@/components/MixerPanel'
 import type { useAudioMixer } from '@/hooks/useAudioMixer'
+import { useUILang } from '@/components/UILangProvider'
 
 type MixerState = ReturnType<typeof useAudioMixer>
 
 export default function MixerDrawer({ mixer }: { mixer: MixerState }) {
+  const { t } = useUILang()
 
   return (
     <>
@@ -16,7 +18,7 @@ export default function MixerDrawer({ mixer }: { mixer: MixerState }) {
       >
         <button
           onClick={mixer.openDrawer}
-          aria-label="打开调音台"
+          aria-label={t.mixer}
           className="text-xs px-4 py-1.5 rounded-full font-medium transition-all duration-200 hover:brightness-110 active:scale-95"
           style={{
             background: 'var(--accent-glow)',
@@ -24,7 +26,7 @@ export default function MixerDrawer({ mixer }: { mixer: MixerState }) {
             color: 'var(--color-accent)',
           }}
         >
-          🎛 调音台
+          🎛 {t.mixer}
         </button>
       </div>
 
