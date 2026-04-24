@@ -1,11 +1,15 @@
 'use client'
 
+import { useUILang } from '@/components/UILangProvider'
+
 interface PhoneticToggleProps {
   showPhonetic: boolean
   onToggle: () => void
 }
 
 export default function PhoneticToggle({ showPhonetic, onToggle }: PhoneticToggleProps) {
+  const { t } = useUILang()
+
   return (
     <button
       onClick={onToggle}
@@ -15,7 +19,7 @@ export default function PhoneticToggle({ showPhonetic, onToggle }: PhoneticToggl
           : 'bg-gray-50 border-gray-300 text-gray-500'
       }`}
     >
-      {showPhonetic ? '隐藏音译' : '显示音译'}
+      {showPhonetic ? t.hidePhoneticLabel : t.showPhoneticLabel}
     </button>
   )
 }
