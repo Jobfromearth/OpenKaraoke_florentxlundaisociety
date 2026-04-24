@@ -45,6 +45,6 @@ describe('SearchBar', () => {
 
     await waitFor(() => screen.getByText('Hello - Adele'))
     fireEvent.click(screen.getByRole('button', { name: /Hello - Adele/ }))
-    expect(onSelect).toHaveBeenCalledWith({ ...mockResults[0], language: 'en' })
+    expect(onSelect).toHaveBeenCalledWith({ ...mockResults[0], language: 'en', query: 'Hello' })
   })
 })
