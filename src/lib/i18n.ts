@@ -43,6 +43,7 @@ export interface Translations {
   mixerStartRecording: string
   mixerStopRecording: string
   mixerDownload: string
+  mixerCloseLabel: string
 }
 
 export const translations: Record<UILang, Translations> = {
@@ -87,6 +88,7 @@ export const translations: Record<UILang, Translations> = {
     mixerStartRecording: '开始录音',
     mixerStopRecording: '停止录音',
     mixerDownload: '下载录音',
+    mixerCloseLabel: '关闭调音台',
   },
   en: {
     appTitle: 'OpenKaraoke',
@@ -129,6 +131,7 @@ export const translations: Record<UILang, Translations> = {
     mixerStartRecording: 'Start recording',
     mixerStopRecording: 'Stop recording',
     mixerDownload: 'Download',
+    mixerCloseLabel: 'Close mixer',
   },
   sv: {
     appTitle: 'OpenKaraoke',
@@ -171,5 +174,6 @@ export const translations: Record<UILang, Translations> = {
     mixerStartRecording: 'Starta inspelning',
     mixerStopRecording: 'Stoppa inspelning',
     mixerDownload: 'Ladda ner',
+    mixerCloseLabel: 'Stäng mixer',
   },
 }

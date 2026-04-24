@@ -71,7 +71,7 @@ export default function MixerPanel({
           {error && <span className="text-xs" style={{ color: '#F87171' }}>{error}</span>}
           <button
             onClick={onClose}
-            aria-label="关闭调音台"
+            aria-label={t.mixerCloseLabel}
             className="flex items-center justify-center w-5 h-5 rounded-full transition-all hover:brightness-150"
             style={{ background: 'var(--color-surface-2)', color: 'var(--color-text-3)' }}
           >

@@ -21,7 +21,10 @@
       "Bash(git push *)",
       "Bash(git log *)",
       "Bash(npx prisma *)",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "Bash(cat)",
+      "Bash(bash /tmp/check_keys.sh)",
+      "Bash(bash /tmp/verify_translations.sh)"
     ]
   }
 }
