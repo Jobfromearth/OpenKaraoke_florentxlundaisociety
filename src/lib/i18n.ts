@@ -21,6 +21,8 @@ export interface Translations {
   songLoadError: string
   showPhonetic: string
   hidePhonetic: string
+  showPhoneticLabel: string
+  hidePhoneticLabel: string
   showTranslation: string
   hideTranslation: string
   loopLabel: string
@@ -64,6 +66,8 @@ export const translations: Record<UILang, Translations> = {
     songLoadError: '歌曲加载失败',
     showPhonetic: '显示音译',
     hidePhonetic: '隐藏音译',
+    showPhoneticLabel: '显示音译',
+    hidePhoneticLabel: '隐藏音译',
     showTranslation: '显示翻译',
     hideTranslation: '隐藏翻译',
     loopLabel: '单句循环：',
@@ -104,6 +108,8 @@ export const translations: Record<UILang, Translations> = {
     songLoadError: 'Failed to load song',
     showPhonetic: 'Show phonetics',
     hidePhonetic: 'Hide phonetics',
+    showPhoneticLabel: 'Show phonetics',
+    hidePhoneticLabel: 'Hide phonetics',
     showTranslation: 'Show translation',
     hideTranslation: 'Hide translation',
     loopLabel: 'Loop: ',
@@ -144,6 +150,8 @@ export const translations: Record<UILang, Translations> = {
     songLoadError: 'Det gick inte att ladda låten',
     showPhonetic: 'Visa fonetik',
     hidePhonetic: 'Dölj fonetik',
+    showPhoneticLabel: 'Visa fonetik',
+    hidePhoneticLabel: 'Dölj fonetik',
     showTranslation: 'Visa översättning',
     hideTranslation: 'Dölj översättning',
     loopLabel: 'Slinga: ',
