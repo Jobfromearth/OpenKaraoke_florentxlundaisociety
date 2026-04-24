@@ -32,7 +32,7 @@ export default function LyricLine({ line, isActive, showPhonetic, showTranslatio
       }`}
     >
       {/* Original text row */}
-      <div className="flex flex-wrap gap-x-2 text-base font-medium">
+      <div className={`flex flex-wrap gap-x-2 font-medium ${isActive ? 'text-xl' : 'text-base'}`}>
         {line.segments.length > 0 ? (
           line.segments.map((seg, i) => {
             const colors = COLOR_CLASSES[seg.color % 5]
@@ -50,7 +50,7 @@ export default function LyricLine({ line, isActive, showPhonetic, showTranslatio
 
       {/* Phonetic row */}
       {showPhonetic && (
-        <div className="flex flex-wrap gap-x-2 text-sm mt-0.5">
+        <div className={`flex flex-wrap gap-x-2 mt-0.5 ${isActive ? 'text-base' : 'text-sm'}`}>
           {line.segments.length > 0 ? (
             line.segments.map((seg, i) => {
               const colors = COLOR_CLASSES[seg.color % 5]
@@ -69,7 +69,7 @@ export default function LyricLine({ line, isActive, showPhonetic, showTranslatio
 
       {/* Translation row */}
       {showTranslation && line.translation && (
-        <div className="text-xs mt-0.5 text-gray-400 italic">{line.translation}</div>
+        <div className={`mt-0.5 text-gray-400 italic ${isActive ? 'text-sm' : 'text-xs'}`}>{line.translation}</div>
       )}
     </button>
   )
